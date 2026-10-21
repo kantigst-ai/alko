@@ -1,0 +1,275 @@
+[
+  {
+    "id": "sp_gin",
+    "name": "Джин",
+    "category": "spirits",
+    "inStock": true,
+    "isCustom": false
+  },
+  {
+    "id": "sp_na_gin",
+    "name": "Безалкогольный джин",
+    "category": "spirits",
+    "inStock": true,
+    "isCustom": false
+  },
+  {
+    "id": "sp_tequila_blanco",
+    "name": "Текила бланко",
+    "category": "spirits",
+    "inStock": true,
+    "isCustom": false
+  },
+  {
+    "id": "sp_tequila_repo",
+    "name": "Текила репосадо",
+    "category": "spirits",
+    "inStock": false,
+    "isCustom": false
+  },
+  {
+    "id": "sp_bourbon",
+    "name": "Бурбон",
+    "category": "spirits",
+    "inStock": true,
+    "isCustom": false
+  },
+  {
+    "id": "sp_white_rum",
+    "name": "Белый ром",
+    "category": "spirits",
+    "inStock": true,
+    "isCustom": false
+  },
+  {
+    "id": "sp_dark_rum",
+    "name": "Темный ром",
+    "category": "spirits",
+    "inStock": false,
+    "isCustom": false
+  },
+  {
+    "id": "sp_vodka",
+    "name": "Водка",
+    "category": "spirits",
+    "inStock": true,
+    "isCustom": false
+  },
+  {
+    "id": "sp_mezcal",
+    "name": "Мескаль",
+    "category": "spirits",
+    "inStock": true,
+    "isCustom": false
+  },
+  {
+    "id": "lq_campari",
+    "name": "Кампари",
+    "category": "liqueurs",
+    "inStock": true,
+    "isCustom": false
+  },
+  {
+    "id": "lq_sweet_vermouth",
+    "name": "Сладкий вермут",
+    "category": "liqueurs",
+    "inStock": true,
+    "isCustom": false
+  },
+  {
+    "id": "lq_dry_vermouth",
+    "name": "Сухой вермут",
+    "category": "liqueurs",
+    "inStock": false,
+    "isCustom": false
+  },
+  {
+    "id": "lq_triple_sec",
+    "name": "Трипл сек",
+    "category": "liqueurs",
+    "inStock": true,
+    "isCustom": false
+  },
+  {
+    "id": "lq_coffee",
+    "name": "Кофейный ликер",
+    "category": "liqueurs",
+    "inStock": false,
+    "isCustom": false
+  },
+  {
+    "id": "lq_amaro",
+    "name": "Амаро",
+    "category": "liqueurs",
+    "inStock": true,
+    "isCustom": false
+  },
+  {
+    "id": "sy_simple",
+    "name": "Простой сахарный сироп",
+    "category": "syrups",
+    "inStock": true,
+    "isCustom": false
+  },
+  {
+    "id": "sy_lavender",
+    "name": "Лавандовый сироп",
+    "category": "syrups",
+    "inStock": true,
+    "isCustom": false
+  },
+  {
+    "id": "sy_berry",
+    "name": "Ягодный сироп (малина/ежевика)",
+    "category": "syrups",
+    "inStock": true,
+    "isCustom": false
+  },
+  {
+    "id": "sy_vanilla",
+    "name": "Ванильный сироп",
+    "category": "syrups",
+    "inStock": false,
+    "isCustom": false
+  },
+  {
+    "id": "sy_honey",
+    "name": "Медовый сироп",
+    "category": "syrups",
+    "inStock": true,
+    "isCustom": false
+  },
+  {
+    "id": "sy_falernum",
+    "name": "Фалернум",
+    "category": "syrups",
+    "inStock": false,
+    "isCustom": false
+  },
+  {
+    "id": "mx_lime",
+    "name": "Сок лайма",
+    "category": "mixers",
+    "inStock": true,
+    "isCustom": false
+  },
+  {
+    "id": "mx_lemon",
+    "name": "Сок лимона",
+    "category": "mixers",
+    "inStock": true,
+    "isCustom": false
+  },
+  {
+    "id": "mx_grapefruit",
+    "name": "Грейпфрутовый сок",
+    "category": "mixers",
+    "inStock": true,
+    "isCustom": false
+  },
+  {
+    "id": "mx_tonic",
+    "name": "Тоник",
+    "category": "mixers",
+    "inStock": true,
+    "isCustom": false
+  },
+  {
+    "id": "mx_soda",
+    "name": "Содовая",
+    "category": "mixers",
+    "inStock": true,
+    "isCustom": false
+  },
+  {
+    "id": "mx_calpis",
+    "name": "Calpis / азиатские концентраты",
+    "category": "mixers",
+    "inStock": true,
+    "isCustom": false
+  },
+  {
+    "id": "mx_ginger_beer",
+    "name": "Имбирное пиво",
+    "category": "mixers",
+    "inStock": false,
+    "isCustom": false
+  },
+  {
+    "id": "bt_angostura",
+    "name": "Ангостура",
+    "category": "bitters",
+    "inStock": true,
+    "isCustom": false
+  },
+  {
+    "id": "bt_peychauds",
+    "name": "Пейшо",
+    "category": "bitters",
+    "inStock": false,
+    "isCustom": false
+  },
+  {
+    "id": "bt_orange",
+    "name": "Апельсиновый биттер",
+    "category": "bitters",
+    "inStock": true,
+    "isCustom": false
+  },
+  {
+    "id": "bt_rosemary",
+    "name": "Розмарин",
+    "category": "bitters",
+    "inStock": true,
+    "isCustom": false
+  },
+  {
+    "id": "bt_mint",
+    "name": "Мята",
+    "category": "bitters",
+    "inStock": true,
+    "isCustom": false
+  },
+  {
+    "id": "bt_thyme",
+    "name": "Тимьян",
+    "category": "bitters",
+    "inStock": false,
+    "isCustom": false
+  },
+  {
+    "id": "sm_cherry",
+    "name": "Вишневая щепа",
+    "category": "smoke",
+    "inStock": true,
+    "isCustom": false
+  },
+  {
+    "id": "sm_apple",
+    "name": "Яблочная щепа",
+    "category": "smoke",
+    "inStock": true,
+    "isCustom": false
+  },
+  {
+    "id": "sm_oak",
+    "name": "Дуб",
+    "category": "smoke",
+    "inStock": false,
+    "isCustom": false
+  },
+  {
+    "id": "sm_smoker",
+    "name": "Электронный смокер/окуриватель",
+    "category": "smoke",
+    "inStock": true,
+    "isCustom": false
+  },
+  {
+    "id": "sm_flame_peel",
+    "name": "Пламя/цедра",
+    "category": "smoke",
+    "inStock": true,
+    "isCustom": false
+  }
+]
