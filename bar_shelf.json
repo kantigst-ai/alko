@@ -768,5 +768,12 @@
     "category": "bitters",
     "inStock": true,
     "isCustom": true
+  },
+  {
+    "id": "cust_1792594123809_gw8v",
+    "name": "Кордиал Юдзу",
+    "category": "mixers",
+    "inStock": true,
+    "isCustom": true
   }
 ]
