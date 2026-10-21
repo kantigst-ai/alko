@@ -230,5 +230,39 @@
     "rating": 5,
     "userNotes": "",
     "createdAt": "2026-10-21T13:33:13.445Z"
+  },
+  {
+    "id": "rec_1792589781384",
+    "title": "тест бухич",
+    "tagline": "поэтичный бухич в зюзю",
+    "tasteProfile": [
+      "авторский",
+      "сбалансированный"
+    ],
+    "glassware": "Хайбол",
+    "method": "Шейк (Shake)",
+    "ice": "Кубиковый лед",
+    "proportions": [
+      {
+        "ingredient": "Торт",
+        "amount": "1",
+        "unit": "шт"
+      },
+      {
+        "ingredient": "Водка",
+        "amount": "5000",
+        "unit": "мл"
+      }
+    ],
+    "technique": [
+      "1. Топ",
+      "2. Топ",
+      "3. Топ"
+    ],
+    "garnish": "Цедра апельсина",
+    "smokeNotes": "Без окуривания",
+    "rating": 5,
+    "userNotes": "",
+    "createdAt": "2026-10-21T13:36:21.384Z"
   }
 ]
