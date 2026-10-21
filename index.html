@@ -226,58 +226,8 @@
             </p>
           </div>
 
-          <!-- Quick Global Actions & Cloud/File Bar Shelf Actions -->
+          <!-- Quick Global Actions & Collapsible Spoiler for Cloud/File Bar Shelf Actions -->
           <div class="flex flex-col sm:items-end gap-2.5">
-            <div class="flex flex-wrap items-center gap-2">
-              <button
-                type="button"
-                onclick="syncShelfFromGitHub()"
-                id="btnPullShelfGitHub"
-                class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-medium bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 transition-colors"
-                title="Загрузить актуальный bar_shelf.json из GitHub репозитория"
-              >
-                <svg class="w-4 h-4 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
-                </svg>
-                <span>Pull из GitHub</span>
-              </button>
-
-              <button
-                type="button"
-                onclick="pushShelfToGitHub()"
-                id="btnPushShelfGitHub"
-                class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-medium bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 transition-colors"
-                title="Закоммитить текущую барную полку в GitHub (bar_shelf.json)"
-              >
-                <svg class="w-4 h-4 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
-                </svg>
-                <span>Push в GitHub</span>
-              </button>
-
-              <button
-                type="button"
-                onclick="exportBarShelfJson()"
-                class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-medium bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 transition-colors"
-              >
-                <svg class="w-4 h-4 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/>
-                </svg>
-                <span>Скачать bar_shelf.json</span>
-              </button>
-
-              <label
-                for="importBarShelfFileInput"
-                class="cursor-pointer inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-medium bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 transition-colors"
-              >
-                <svg class="w-4 h-4 text-zinc-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
-                </svg>
-                <span>Загрузить bar_shelf.json</span>
-                <input type="file" id="importBarShelfFileInput" accept=".json,application/json" onchange="handleImportBarShelfFile(event)" class="hidden" />
-              </label>
-            </div>
-
             <div class="flex flex-wrap items-center gap-2">
               <button type="button" onclick="setAllInventory(true)" class="px-3.5 py-2 rounded-xl text-xs font-medium bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 transition-colors">
                 Выбрать всё
@@ -293,6 +243,68 @@
                 <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
               </button>
             </div>
+
+            <!-- Collapsible Spoiler: Bar Shelf Sync & Backup -->
+            <details id="shelfSyncSpoiler" class="group w-full sm:w-auto bg-slate-950/70 border border-zinc-800/90 rounded-xl overflow-hidden transition-all">
+              <summary class="list-none cursor-pointer select-none flex items-center justify-between gap-3 px-3.5 py-2 text-xs font-medium text-zinc-300 hover:text-amber-300 transition-colors">
+                <span class="inline-flex items-center gap-2">
+                  <svg class="w-4 h-4 text-amber-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+                  </svg>
+                  <span>Синхронизация и бэкап полки (GitHub / JSON)</span>
+                </span>
+                <svg class="w-4 h-4 text-zinc-500 transition-transform duration-200 group-open:rotate-180 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+              </summary>
+              <div class="p-3 pt-2 border-t border-zinc-800/80 bg-slate-950/90 flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onclick="syncShelfFromGitHub()"
+                  id="btnPullShelfGitHub"
+                  class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 transition-colors"
+                  title="Загрузить актуальный bar_shelf.json из GitHub репозитория"
+                >
+                  <svg class="w-3.5 h-3.5 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+                  </svg>
+                  <span>Pull из GitHub</span>
+                </button>
+
+                <button
+                  type="button"
+                  onclick="pushShelfToGitHub()"
+                  id="btnPushShelfGitHub"
+                  class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 transition-colors"
+                  title="Закоммитить текущую барную полку в GitHub (bar_shelf.json)"
+                >
+                  <svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+                  </svg>
+                  <span>Push в GitHub</span>
+                </button>
+
+                <button
+                  type="button"
+                  onclick="exportBarShelfJson()"
+                  class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 transition-colors"
+                >
+                  <svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/>
+                  </svg>
+                  <span>Скачать bar_shelf.json</span>
+                </button>
+
+                <label
+                  for="importBarShelfFileInput"
+                  class="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 transition-colors"
+                >
+                  <svg class="w-3.5 h-3.5 text-zinc-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+                  </svg>
+                  <span>Загрузить bar_shelf.json</span>
+                  <input type="file" id="importBarShelfFileInput" accept=".json,application/json" onchange="handleImportBarShelfFile(event)" class="hidden" />
+                </label>
+              </div>
+            </details>
           </div>
         </div>
 
@@ -533,63 +545,79 @@
             </p>
           </div>
 
-          <!-- Cloud & File Actions -->
-          <div class="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              onclick="syncFromGitHub()"
-              id="btnPullGitHub"
-              class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-medium bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 transition-colors"
-              title="Загрузить актуальный recipes.json из GitHub репозитория"
-            >
-              <svg class="w-4 h-4 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
-              </svg>
-              <span>Pull из GitHub</span>
-            </button>
+          <!-- Cloud & File Actions inside Collapsible Spoiler + Manual Recipe CTA -->
+          <div class="flex flex-col sm:items-end gap-2.5">
+            <div class="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onclick="openManualRecipeModal()"
+                class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-md shadow-amber-500/10 transition-colors"
+              >
+                <span>+ Свой рецепт</span>
+              </button>
+            </div>
 
-            <button
-              type="button"
-              onclick="pushAllToGitHub()"
-              id="btnPushGitHub"
-              class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-medium bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 transition-colors"
-              title="Закоммитить текущую книгу рецептов в GitHub (recipes.json)"
-            >
-              <svg class="w-4 h-4 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
-              </svg>
-              <span>Push в GitHub</span>
-            </button>
+            <!-- Collapsible Spoiler: Recipes Sync & Backup -->
+            <details id="recipesSyncSpoiler" class="group w-full sm:w-auto bg-slate-950/70 border border-zinc-800/90 rounded-xl overflow-hidden transition-all">
+              <summary class="list-none cursor-pointer select-none flex items-center justify-between gap-3 px-3.5 py-2 text-xs font-medium text-zinc-300 hover:text-amber-300 transition-colors">
+                <span class="inline-flex items-center gap-2">
+                  <svg class="w-4 h-4 text-amber-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+                  </svg>
+                  <span>Синхронизация и бэкап рецептов (GitHub / JSON)</span>
+                </span>
+                <svg class="w-4 h-4 text-zinc-500 transition-transform duration-200 group-open:rotate-180 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+              </summary>
+              <div class="p-3 pt-2 border-t border-zinc-800/80 bg-slate-950/90 flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onclick="syncFromGitHub()"
+                  id="btnPullGitHub"
+                  class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 transition-colors"
+                  title="Загрузить актуальный recipes.json из GitHub репозитория"
+                >
+                  <svg class="w-3.5 h-3.5 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+                  </svg>
+                  <span>Pull из GitHub</span>
+                </button>
 
-            <button
-              type="button"
-              onclick="exportRecipesJson()"
-              class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-medium bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 transition-colors"
-            >
-              <svg class="w-4 h-4 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/>
-              </svg>
-              <span>Скачать recipes.json</span>
-            </button>
+                <button
+                  type="button"
+                  onclick="pushAllToGitHub()"
+                  id="btnPushGitHub"
+                  class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 transition-colors"
+                  title="Закоммитить текущую книгу рецептов в GitHub (recipes.json)"
+                >
+                  <svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+                  </svg>
+                  <span>Push в GitHub</span>
+                </button>
 
-            <label
-              for="importRecipesFileInput"
-              class="cursor-pointer inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-medium bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 transition-colors"
-            >
-              <svg class="w-4 h-4 text-zinc-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
-              </svg>
-              <span>Загрузить recipes.json</span>
-              <input type="file" id="importRecipesFileInput" accept=".json,application/json" onchange="handleImportRecipesFile(event)" class="hidden" />
-            </label>
+                <button
+                  type="button"
+                  onclick="exportRecipesJson()"
+                  class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 transition-colors"
+                >
+                  <svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/>
+                  </svg>
+                  <span>Скачать recipes.json</span>
+                </button>
 
-            <button
-              type="button"
-              onclick="openManualRecipeModal()"
-              class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-amber-500 hover:bg-amber-400 text-slate-950 transition-colors"
-            >
-              <span>+ Свой рецепт</span>
-            </button>
+                <label
+                  for="importRecipesFileInput"
+                  class="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 transition-colors"
+                >
+                  <svg class="w-3.5 h-3.5 text-zinc-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+                  </svg>
+                  <span>Загрузить recipes.json</span>
+                  <input type="file" id="importRecipesFileInput" accept=".json,application/json" onchange="handleImportRecipesFile(event)" class="hidden" />
+                </label>
+              </div>
+            </details>
           </div>
         </div>
 
@@ -1007,6 +1035,28 @@
   </div>
 
   <!-- ==========================================
+       MODAL 5: ПОДТВЕРЖДЕНИЕ PUSH / PULL С GITHUB
+       ========================================== -->
+  <div id="gitSyncConfirmModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm no-print">
+    <div class="bg-zinc-900 border border-zinc-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+      <div class="flex items-center gap-3">
+        <div id="gitSyncConfirmIconBox" class="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        </div>
+        <div>
+          <h4 id="gitSyncConfirmTitle" class="font-serif text-lg font-bold text-zinc-100">Подтвердите действие с GitHub</h4>
+          <p id="gitSyncConfirmTarget" class="text-xs text-amber-300 font-mono mt-0.5"></p>
+        </div>
+      </div>
+      <p id="gitSyncConfirmDesc" class="text-xs text-zinc-300 leading-relaxed bg-slate-950/70 border border-zinc-800 rounded-xl p-3.5"></p>
+      <div class="flex items-center justify-end gap-2.5 pt-2">
+        <button type="button" onclick="closeGitSyncConfirmModal()" class="px-4 py-2 rounded-xl text-xs font-medium bg-zinc-800 hover:bg-zinc-700 text-zinc-300">Отмена</button>
+        <button type="button" id="confirmGitSyncActionBtn" onclick="confirmGitSyncAction()" class="px-4 py-2 rounded-xl text-xs font-semibold bg-amber-500 hover:bg-amber-400 text-slate-950">Подтвердить</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
        APPLICATION LOGIC (CLEAN ES6+ MODULE PATTERN)
        ========================================== -->
   <script>
@@ -1257,6 +1307,7 @@
       recipeTagFilter: 'all',
       recipeSort: 'newest',
       pendingDeleteId: null,
+      pendingGitSyncAction: null,
       aiSettings: {
         provider: 'deepseek',
         endpoint: 'https://api.deepseek.com/chat/completions',
@@ -1776,7 +1827,7 @@
       reader.readAsText(file, 'utf-8');
     }
 
-    async function pushShelfToGitHub() {
+    async function executePushShelfToGitHub() {
       if (!isGitHubConnected()) {
         showToast('Укажите GitHub Owner, Repo и PAT в настройках', 'warning');
         openSettingsModal('github');
@@ -1862,7 +1913,7 @@
       }
     }
 
-    async function syncShelfFromGitHub() {
+    async function executeSyncShelfFromGitHub() {
       if (!isGitHubConnected()) {
         showToast('Для загрузки полки из GitHub укажите Owner, Repo и PAT в настройках', 'warning');
         openSettingsModal('github');
@@ -2881,11 +2932,11 @@ ${customWish ? `Дополнительное пожелание гостя: ${cu
       }
     }
 
-    async function pushAllToGitHub() {
+    async function executePushAllToGitHub() {
       await commitRecipeToGitHub(null, `Sync Atelier Bar recipes (${state.recipes.length} items)`);
     }
 
-    async function syncFromGitHub() {
+    async function executeSyncFromGitHub() {
       if (!isGitHubConnected()) {
         showToast('Для загрузки из GitHub укажите Owner, Repo и PAT в настройках', 'warning');
         openSettingsModal('github');
@@ -3731,6 +3782,105 @@ ${customWish ? `Дополнительное пожелание гостя: ${cu
       } finally {
         if (btn) btn.textContent = 'Проверить подключение';
       }
+    }
+
+
+    // --- GITHUB PUSH / PULL CONFIRMATION MODAL CONTROLLER ---
+    function openGitSyncConfirmModal(actionType) {
+      if (!isGitHubConnected()) {
+        showToast('Укажите GitHub Owner, Repo и PAT в настройках', 'warning');
+        openSettingsModal('github');
+        return;
+      }
+
+      state.pendingGitSyncAction = actionType;
+      const { owner, repo, branch, path, shelfPath } = state.ghSettings;
+      const cleanBranch = (branch || 'main').trim();
+      const recipesFile = (path || 'recipes.json').trim();
+      const shelfFile = (shelfPath || 'bar_shelf.json').trim();
+
+      const modal = document.getElementById('gitSyncConfirmModal');
+      const titleEl = document.getElementById('gitSyncConfirmTitle');
+      const targetEl = document.getElementById('gitSyncConfirmTarget');
+      const descEl = document.getElementById('gitSyncConfirmDesc');
+      const btnEl = document.getElementById('confirmGitSyncActionBtn');
+      const iconBox = document.getElementById('gitSyncConfirmIconBox');
+      if (!modal || !titleEl || !targetEl || !descEl || !btnEl || !iconBox) return;
+
+      if (actionType === 'push_shelf') {
+        const inStockCount = state.inventory.filter(i => i.inStock).length;
+        titleEl.textContent = 'Отправить барную полку в GitHub (Push)?';
+        targetEl.textContent = `${owner}/${repo} (${cleanBranch}) → ${shelfFile}`;
+        descEl.textContent = `Текущее локальное состояние барной полки (${inStockCount} из ${state.inventory.length} поз. в наличии) перезапишет файл «${shelfFile}» в вашем GitHub репозитории.`;
+        btnEl.textContent = 'Да, отправить Push';
+        btnEl.className = 'px-4 py-2 rounded-xl text-xs font-semibold bg-amber-500 hover:bg-amber-400 text-slate-950';
+        iconBox.className = 'w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0';
+      } else if (actionType === 'pull_shelf') {
+        titleEl.textContent = 'Загрузить барную полку из GitHub (Pull)?';
+        targetEl.textContent = `${owner}/${repo} (${cleanBranch}) ← ${shelfFile}`;
+        descEl.textContent = `Локальная барная полка в браузере будет заменена данными из файла «${shelfFile}» в репозитории GitHub. Несохраненные локальные изменения полки будут перезаписаны.`;
+        btnEl.textContent = 'Да, загрузить Pull';
+        btnEl.className = 'px-4 py-2 rounded-xl text-xs font-semibold bg-emerald-500 hover:bg-emerald-400 text-slate-950';
+        iconBox.className = 'w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0';
+      } else if (actionType === 'push_recipes') {
+        titleEl.textContent = 'Отправить книгу рецептов в GitHub (Push)?';
+        targetEl.textContent = `${owner}/${repo} (${cleanBranch}) → ${recipesFile}`;
+        descEl.textContent = `Ваша локальная коллекция рецептов (${state.recipes.length} рец.) будет закоммичена и перезапишет файл «${recipesFile}» в репозитории GitHub.`;
+        btnEl.textContent = 'Да, отправить Push';
+        btnEl.className = 'px-4 py-2 rounded-xl text-xs font-semibold bg-amber-500 hover:bg-amber-400 text-slate-950';
+        iconBox.className = 'w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0';
+      } else if (actionType === 'pull_recipes') {
+        titleEl.textContent = 'Загрузить книгу рецептов из GitHub (Pull)?';
+        targetEl.textContent = `${owner}/${repo} (${cleanBranch}) ← ${recipesFile}`;
+        descEl.textContent = `Локальная книга рецептов в браузере будет заменена списком из файла «${recipesFile}» из репозитория GitHub. Несохраненные в Git локальные изменения будут перезаписаны.`;
+        btnEl.textContent = 'Да, загрузить Pull';
+        btnEl.className = 'px-4 py-2 rounded-xl text-xs font-semibold bg-emerald-500 hover:bg-emerald-400 text-slate-950';
+        iconBox.className = 'w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0';
+      }
+
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeGitSyncConfirmModal() {
+      state.pendingGitSyncAction = null;
+      const modal = document.getElementById('gitSyncConfirmModal');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
+
+    async function confirmGitSyncAction() {
+      const action = state.pendingGitSyncAction;
+      closeGitSyncConfirmModal();
+      if (!action) return;
+
+      if (action === 'push_shelf') {
+        await executePushShelfToGitHub();
+      } else if (action === 'pull_shelf') {
+        await executeSyncShelfFromGitHub();
+      } else if (action === 'push_recipes') {
+        await executePushAllToGitHub();
+      } else if (action === 'pull_recipes') {
+        await executeSyncFromGitHub();
+      }
+    }
+
+    function pushShelfToGitHub() {
+      openGitSyncConfirmModal('push_shelf');
+    }
+
+    function syncShelfFromGitHub() {
+      openGitSyncConfirmModal('pull_shelf');
+    }
+
+    function pushAllToGitHub() {
+      openGitSyncConfirmModal('push_recipes');
+    }
+
+    function syncFromGitHub() {
+      openGitSyncConfirmModal('pull_recipes');
     }
 
     // Boot application on DOM ready
