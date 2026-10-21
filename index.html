@@ -226,21 +226,73 @@
             </p>
           </div>
 
-          <!-- Quick Global Actions -->
-          <div class="flex flex-wrap items-center gap-2">
-            <button type="button" onclick="setAllInventory(true)" class="px-3.5 py-2 rounded-xl text-xs font-medium bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 transition-colors">
-              Выбрать всё
-            </button>
-            <button type="button" onclick="setAllInventory(false)" class="px-3.5 py-2 rounded-xl text-xs font-medium bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-zinc-700 transition-colors">
-              Сбросить всё
-            </button>
-            <button type="button" onclick="resetDefaultInventory()" class="px-3.5 py-2 rounded-xl text-xs font-medium bg-zinc-800/70 hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 border border-zinc-800 transition-colors">
-              Стартовый бар
-            </button>
-            <button type="button" onclick="switchTab('generator')" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-gradient-to-r from-amber-500 to-copper-500 hover:from-amber-400 hover:to-copper-400 text-slate-950 shadow-md shadow-amber-500/10 transition-all">
-              <span>Перейти к миксологу</span>
-              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-            </button>
+          <!-- Quick Global Actions & Cloud/File Bar Shelf Actions -->
+          <div class="flex flex-col sm:items-end gap-2.5">
+            <div class="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onclick="syncShelfFromGitHub()"
+                id="btnPullShelfGitHub"
+                class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-medium bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 transition-colors"
+                title="Загрузить актуальный bar_shelf.json из GitHub репозитория"
+              >
+                <svg class="w-4 h-4 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                <span>Pull из GitHub</span>
+              </button>
+
+              <button
+                type="button"
+                onclick="pushShelfToGitHub()"
+                id="btnPushShelfGitHub"
+                class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-medium bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 transition-colors"
+                title="Закоммитить текущую барную полку в GitHub (bar_shelf.json)"
+              >
+                <svg class="w-4 h-4 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+                <span>Push в GitHub</span>
+              </button>
+
+              <button
+                type="button"
+                onclick="exportBarShelfJson()"
+                class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-medium bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 transition-colors"
+              >
+                <svg class="w-4 h-4 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/>
+                </svg>
+                <span>Скачать bar_shelf.json</span>
+              </button>
+
+              <label
+                for="importBarShelfFileInput"
+                class="cursor-pointer inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-medium bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 transition-colors"
+              >
+                <svg class="w-4 h-4 text-zinc-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+                </svg>
+                <span>Загрузить bar_shelf.json</span>
+                <input type="file" id="importBarShelfFileInput" accept=".json,application/json" onchange="handleImportBarShelfFile(event)" class="hidden" />
+              </label>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-2">
+              <button type="button" onclick="setAllInventory(true)" class="px-3.5 py-2 rounded-xl text-xs font-medium bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 transition-colors">
+                Выбрать всё
+              </button>
+              <button type="button" onclick="setAllInventory(false)" class="px-3.5 py-2 rounded-xl text-xs font-medium bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-zinc-700 transition-colors">
+                Сбросить всё
+              </button>
+              <button type="button" onclick="resetDefaultInventory()" class="px-3.5 py-2 rounded-xl text-xs font-medium bg-zinc-800/70 hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 border border-zinc-800 transition-colors">
+                Стартовый бар
+              </button>
+              <button type="button" onclick="switchTab('generator')" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-gradient-to-r from-amber-500 to-copper-500 hover:from-amber-400 hover:to-copper-400 text-slate-950 shadow-md shadow-amber-500/10 transition-all">
+                <span>Перейти к миксологу</span>
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -749,7 +801,7 @@
             </div>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label for="ghBranchInput" class="block text-xs font-medium text-zinc-300 mb-1.5">Branch (Ветка)</label>
               <input
@@ -761,12 +813,22 @@
               />
             </div>
             <div>
-              <label for="ghPathInput" class="block text-xs font-medium text-zinc-300 mb-1.5">File Path (Путь к файлу)</label>
+              <label for="ghPathInput" class="block text-xs font-medium text-zinc-300 mb-1.5">Файл рецептов</label>
               <input
                 type="text"
                 id="ghPathInput"
                 placeholder="recipes.json"
                 value="recipes.json"
+                class="w-full py-2.5 px-3 bg-slate-950 border border-zinc-800 focus:border-amber-500 rounded-xl text-xs sm:text-sm text-zinc-100 font-mono focus:outline-none"
+              />
+            </div>
+            <div>
+              <label for="ghShelfPathInput" class="block text-xs font-medium text-zinc-300 mb-1.5">Файл барной полки</label>
+              <input
+                type="text"
+                id="ghShelfPathInput"
+                placeholder="bar_shelf.json"
+                value="bar_shelf.json"
                 class="w-full py-2.5 px-3 bg-slate-950 border border-zinc-800 focus:border-amber-500 rounded-xl text-xs sm:text-sm text-zinc-100 font-mono focus:outline-none"
               />
             </div>
@@ -840,7 +902,7 @@
       <div class="flex items-center justify-between px-6 py-4 border-b border-zinc-800 bg-slate-950/50">
         <div>
           <h3 class="font-serif text-xl font-bold text-zinc-100">Записать авторский рецепт</h3>
-          <p class="text-xs text-zinc-400">Добавьте собственную разработку в коллекцию и синхронизируйте с GitHub</p>
+          <p class="text-xs text-zinc-400">Рецепт сохраняется локально в браузере (отправка в GitHub — по кнопке «Push в GitHub»)</p>
         </div>
         <button type="button" onclick="closeManualRecipeModal()" class="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800">✕</button>
       </div>
@@ -935,7 +997,7 @@
         </div>
       </div>
       <p class="text-xs text-zinc-400 leading-relaxed">
-        Рецепт будет удален из локальной книги. Если подключен GitHub токен, обновленный <code class="text-amber-300">recipes.json</code> будет автоматически синхронизирован с репозиторием.
+        Рецепт будет удален из локального хранилища браузера. Чтобы обновить файл <code class="text-amber-300">recipes.json</code> в репозитории, нажмите кнопку «Push в GitHub».
       </p>
       <div class="flex items-center justify-end gap-2.5 pt-2">
         <button type="button" onclick="closeDeleteConfirmModal()" class="px-4 py-2 rounded-xl text-xs font-medium bg-zinc-800 hover:bg-zinc-700 text-zinc-300">Отмена</button>
@@ -1206,6 +1268,7 @@
         repo: '',
         branch: 'main',
         path: 'recipes.json',
+        shelfPath: 'bar_shelf.json',
         token: ''
       }
     };
@@ -1652,7 +1715,198 @@
       safeSetStorage(STORAGE_KEYS.INVENTORY, state.inventory);
       renderInventory();
       updateStatusBadges();
-      showToast(`Ингредиент «${item.name}» удален`, 'info');
+      showToast(`Ингредиент «${item.name}» удален локально`, 'info');
+    }
+
+    function normalizeInventoryItem(item) {
+      const validCats = CATEGORIES.map(c => c.id);
+      const category = validCats.includes(item?.category) ? item.category : 'spirits';
+      return {
+        id: String(item?.id || ('cust_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6))),
+        name: String(item?.name || 'Ингредиент'),
+        category,
+        inStock: Boolean(item?.inStock),
+        isCustom: Boolean(item?.isCustom)
+      };
+    }
+
+    function exportBarShelfJson() {
+      const dataStr = JSON.stringify(state.inventory, null, 2);
+      const blob = new Blob([dataStr], { type: 'application/json;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = state.ghSettings.shelfPath || 'bar_shelf.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast(`Экспортирован файл bar_shelf.json (${state.inventory.length} поз.)`, 'success');
+    }
+
+    function handleImportBarShelfFile(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const content = e.target.result;
+          const parsed = JSON.parse(content);
+          if (!Array.isArray(parsed) || parsed.length === 0) {
+            showToast('Файл bar_shelf.json должен содержать непустой массив ингредиентов', 'warning');
+            return;
+          }
+          state.inventory = parsed.filter(Boolean).map(normalizeInventoryItem);
+          safeSetStorage(STORAGE_KEYS.INVENTORY, state.inventory);
+          renderInventory();
+          renderGeneratorControls();
+          updateStatusBadges();
+          showToast(
+            `Барная полка загружена локально (${state.inventory.length} поз.)`,
+            'success',
+            'Нажмите «Push в GitHub», если хотите отправить обновленную полку в репозиторий.'
+          );
+        } catch (err) {
+          showToast('Ошибка чтения файла bar_shelf.json: проверьте JSON-синтаксис', 'error');
+        } finally {
+          event.target.value = '';
+        }
+      };
+      reader.readAsText(file, 'utf-8');
+    }
+
+    async function pushShelfToGitHub() {
+      if (!isGitHubConnected()) {
+        showToast('Укажите GitHub Owner, Repo и PAT в настройках', 'warning');
+        openSettingsModal('github');
+        return false;
+      }
+
+      const { owner, repo, branch, shelfPath, token } = state.ghSettings;
+      const cleanBranch = (branch || 'main').trim();
+      const cleanPath = (shelfPath || 'bar_shelf.json').trim().replace(/^\/+/, '');
+
+      showToast('Отправка bar_shelf.json в GitHub...', 'info', `${owner}/${repo}:${cleanPath}`);
+
+      try {
+        const getResp = await fetch(`https://api.github.com/repos/${encodeURIComponent(owner.trim())}/${encodeURIComponent(repo.trim())}/contents/${cleanPath}?ref=${encodeURIComponent(cleanBranch)}`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token.trim()}`,
+            'Accept': 'application/vnd.github+json'
+          }
+        });
+
+        let currentSha = null;
+        if (getResp.status === 200) {
+          const fileData = await getResp.json();
+          currentSha = fileData.sha;
+        } else if (getResp.status === 404) {
+          currentSha = null;
+        } else if (getResp.status === 401) {
+          showToast('Ошибка 401: Недействительный GitHub Personal Access Token', 'error');
+          return false;
+        } else if (getResp.status === 403) {
+          showToast('Ошибка 403: Токену не хватает прав Contents: Read and write', 'error');
+          return false;
+        } else {
+          showToast(`Ошибка чтения из GitHub (HTTP ${getResp.status})`, 'error');
+          return false;
+        }
+
+        const jsonString = JSON.stringify(state.inventory, null, 2);
+        const base64Content = encodeUtf8Base64(jsonString);
+        const inStockCount = state.inventory.filter(i => i.inStock).length;
+
+        const putBody = {
+          message: `Sync Atelier Bar shelf (${inStockCount}/${state.inventory.length} in stock)`,
+          content: base64Content,
+          branch: cleanBranch
+        };
+        if (currentSha) {
+          putBody.sha = currentSha;
+        }
+
+        const putResp = await fetch(`https://api.github.com/repos/${encodeURIComponent(owner.trim())}/${encodeURIComponent(repo.trim())}/contents/${cleanPath}`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token.trim()}`,
+            'Accept': 'application/vnd.github+json',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(putBody)
+        });
+
+        if (putResp.ok) {
+          showToast(
+            'Барная полка успешно сохранена в GitHub!',
+            'success',
+            `Коммит: "${putBody.message}" → ${cleanPath}`
+          );
+          updateStatusBadges();
+          return true;
+        } else if (putResp.status === 401) {
+          showToast('Ошибка 401: Bad Credentials — проверьте токен GitHub', 'error');
+        } else if (putResp.status === 404) {
+          showToast('Ошибка 404: Репозиторий или ветка не найдены', 'error');
+        } else if (putResp.status === 409) {
+          showToast('Ошибка 409: Конфликт версий SHA файла. Выполните Pull из GitHub и повторите.', 'warning');
+        } else {
+          showToast(`Ошибка записи в GitHub: HTTP ${putResp.status}`, 'error');
+        }
+        return false;
+      } catch (err) {
+        showToast('Сетевая ошибка при обращении к GitHub API', 'error', err.message || '');
+        return false;
+      }
+    }
+
+    async function syncShelfFromGitHub() {
+      if (!isGitHubConnected()) {
+        showToast('Для загрузки полки из GitHub укажите Owner, Repo и PAT в настройках', 'warning');
+        openSettingsModal('github');
+        return;
+      }
+
+      const { owner, repo, branch, shelfPath, token } = state.ghSettings;
+      const cleanBranch = (branch || 'main').trim();
+      const cleanPath = (shelfPath || 'bar_shelf.json').trim().replace(/^\/+/, '');
+
+      showToast('Загрузка bar_shelf.json из GitHub...', 'info');
+      try {
+        const resp = await fetch(`https://api.github.com/repos/${encodeURIComponent(owner.trim())}/${encodeURIComponent(repo.trim())}/contents/${cleanPath}?ref=${encodeURIComponent(cleanBranch)}`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token.trim()}`,
+            'Accept': 'application/vnd.github+json'
+          }
+        });
+
+        if (resp.status === 200) {
+          const data = await resp.json();
+          const decoded = decodeUtf8Base64(data.content || '');
+          const parsed = JSON.parse(decoded);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            state.inventory = parsed.filter(Boolean).map(normalizeInventoryItem);
+            safeSetStorage(STORAGE_KEYS.INVENTORY, state.inventory);
+            renderInventory();
+            renderGeneratorControls();
+            updateStatusBadges();
+            showToast(`Барная полка загружена из GitHub (${state.inventory.length} поз.)`, 'success');
+          } else {
+            showToast('Файл bar_shelf.json в репозитории пуст или некорректен', 'warning');
+          }
+        } else if (resp.status === 404) {
+          showToast('Файл bar_shelf.json еще не создан в репозитории (404). Нажмите «Push в GitHub» для создания.', 'warning');
+        } else if (resp.status === 401) {
+          showToast('Ошибка 401: Неверный токен авторизации GitHub', 'error');
+        } else {
+          showToast(`Ошибка GitHub API: HTTP ${resp.status}`, 'error');
+        }
+      } catch (e) {
+        showToast('Не удалось загрузить bar_shelf.json из GitHub', 'error', e.message || '');
+      }
     }
 
     // ==========================================
@@ -2439,7 +2693,7 @@ ${customWish ? `Дополнительное пожелание гостя: ${cu
                 class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold bg-gradient-to-r from-amber-500 to-copper-500 hover:from-amber-400 hover:to-copper-400 text-slate-950 shadow-lg transition-all"
               >
                 <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
-                <span>${alreadySaved ? 'Обновить в коллекции' : 'Сохранить в коллекцию (и GitHub)'}</span>
+                <span>${alreadySaved ? 'Обновить в коллекции (локально)' : 'Сохранить в коллекцию'}</span>
               </button>
             </div>
 
@@ -2483,15 +2737,11 @@ ${customWish ? `Дополнительное пожелание гостя: ${cu
       renderGeneratedRecipe();
       renderRecipesBook();
 
-      if (isGitHubConnected()) {
-        await commitRecipeToGitHub(rec, `Add recipe: ${rec.title}`);
-      } else {
-        showToast(
-          `Рецепт «${rec.title}» сохранен в коллекцию`,
-          'success',
-          'Локальное хранилище обновлено. Подключите GitHub PAT для облачной синхронизации.'
-        );
-      }
+      showToast(
+        `Рецепт «${rec.title}» сохранен локально`,
+        'success',
+        'Нажмите «Push в GitHub» в книге рецептов для отправки изменений в репозиторий.'
+      );
     }
 
     // ==========================================
@@ -3088,11 +3338,11 @@ ${customWish ? `Дополнительное пожелание гостя: ${cu
       renderRecipesBook();
       closeRecipeDetailModal();
 
-      if (isGitHubConnected()) {
-        await commitRecipeToGitHub(rec, `Update notes for ${rec.title}`);
-      } else {
-        showToast(`Заметки к «${rec.title}» сохранены`, 'success');
-      }
+      showToast(
+        `Заметки к «${rec.title}» сохранены локально`,
+        'success',
+        'Для отправки изменений в репозиторий нажмите «Push в GitHub».'
+      );
     }
 
     // --- MANUAL RECIPE CREATION MODAL ---
@@ -3162,11 +3412,11 @@ ${customWish ? `Дополнительное пожелание гостя: ${cu
       renderRecipesBook();
       updateStatusBadges();
 
-      if (isGitHubConnected()) {
-        await commitRecipeToGitHub(newRec, `Add recipe: ${newRec.title}`);
-      } else {
-        showToast(`Рецепт «${newRec.title}» добавлен в книгу`, 'success');
-      }
+      showToast(
+        `Рецепт «${newRec.title}» сохранен локально в книгу`,
+        'success',
+        'В GitHub обновления попадут при ручном нажатии на кнопку «Push в GitHub».'
+      );
     }
 
     // --- DELETE RECIPE WITH CONFIRMATION MODAL ---
@@ -3203,11 +3453,11 @@ ${customWish ? `Дополнительное пожелание гостя: ${cu
       renderGeneratedRecipe();
       updateStatusBadges();
 
-      if (isGitHubConnected()) {
-        await commitRecipeToGitHub(null, `Remove recipe: ${rec ? rec.title : id}`);
-      } else {
-        showToast(`Рецепт «${rec ? rec.title : ''}» удален`, 'info');
-      }
+      showToast(
+        `Рецепт «${rec ? rec.title : ''}» удален локально`,
+        'info',
+        'Нажмите «Push в GitHub», чтобы синхронизировать удаление с репозиторием.'
+      );
     }
 
     // --- COPY TO CLIPBOARD & PRINT/PDF ---
@@ -3318,11 +3568,13 @@ ${customWish ? `Дополнительное пожелание гостя: ${cu
       const rInp = document.getElementById('ghRepoInput');
       const bInp = document.getElementById('ghBranchInput');
       const pathInp = document.getElementById('ghPathInput');
+      const shelfPathInp = document.getElementById('ghShelfPathInput');
       const tInp = document.getElementById('ghTokenInput');
       if (oInp) oInp.value = state.ghSettings.owner || '';
       if (rInp) rInp.value = state.ghSettings.repo || '';
       if (bInp) bInp.value = state.ghSettings.branch || 'main';
       if (pathInp) pathInp.value = state.ghSettings.path || 'recipes.json';
+      if (shelfPathInp) shelfPathInp.value = state.ghSettings.shelfPath || 'bar_shelf.json';
       if (tInp) tInp.value = state.ghSettings.token || '';
 
       switchSettingsTab(tab);
@@ -3416,9 +3668,10 @@ ${customWish ? `Дополнительное пожелание гостя: ${cu
       const repo = document.getElementById('ghRepoInput')?.value.trim() || '';
       const branch = document.getElementById('ghBranchInput')?.value.trim() || 'main';
       const path = document.getElementById('ghPathInput')?.value.trim() || 'recipes.json';
+      const shelfPath = document.getElementById('ghShelfPathInput')?.value.trim() || 'bar_shelf.json';
       const token = document.getElementById('ghTokenInput')?.value.trim() || '';
 
-      state.ghSettings = { owner, repo, branch, path, token };
+      state.ghSettings = { owner, repo, branch, path, shelfPath, token };
       safeSetStorage(STORAGE_KEYS.GH_SETTINGS, state.ghSettings);
       updateStatusBadges();
       closeSettingsModal();
@@ -3429,7 +3682,7 @@ ${customWish ? `Дополнительное пожелание гостя: ${cu
     }
 
     function clearGitHubSettings() {
-      state.ghSettings = { owner: '', repo: '', branch: 'main', path: 'recipes.json', token: '' };
+      state.ghSettings = { owner: '', repo: '', branch: 'main', path: 'recipes.json', shelfPath: 'bar_shelf.json', token: '' };
       safeSetStorage(STORAGE_KEYS.GH_SETTINGS, state.ghSettings);
       openSettingsModal('github');
       updateStatusBadges();
