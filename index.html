@@ -1,0 +1,3487 @@
+<!DOCTYPE html>
+<html lang="ru" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Atelier Bar — AI Mixology &amp; Recipe Lab</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,400;1,600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+            serif: ['"Cormorant Garamond"', 'Georgia', 'serif'],
+          },
+          colors: {
+            copper: {
+              400: '#d98a59',
+              500: '#c87137',
+              600: '#a85723',
+            }
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    :root {
+      color-scheme: dark;
+    }
+    body {
+      background-color: #020617;
+      background-image:
+        radial-gradient(circle at 15% 10%, rgba(245, 158, 11, 0.08), transparent 35%),
+        radial-gradient(circle at 85% 15%, rgba(16, 185, 129, 0.05), transparent 35%),
+        radial-gradient(circle at 50% 90%, rgba(200, 113, 55, 0.07), transparent 45%);
+      min-height: 100vh;
+    }
+    /* Custom subtle scrollbars */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #090d16;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #27272a;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #3f3f46;
+    }
+    @keyframes floatSmoke {
+      0% { transform: translateY(0) scale(1); opacity: 0.25; }
+      50% { transform: translateY(-8px) scale(1.06); opacity: 0.55; }
+      100% { transform: translateY(-16px) scale(1.12); opacity: 0; }
+    }
+    .smoke-wisp {
+      animation: floatSmoke 3.2s infinite ease-in-out;
+    }
+    .smoke-wisp-delayed {
+      animation: floatSmoke 3.2s infinite ease-in-out 1.5s;
+    }
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 0 20px rgba(245, 158, 11, 0.15); }
+      50% { box-shadow: 0 0 32px rgba(245, 158, 11, 0.32); }
+    }
+    .amber-glow {
+      animation: pulseGlow 3s infinite ease-in-out;
+    }
+    /* Print / PDF styles */
+    @media print {
+      body {
+        background: #ffffff !important;
+        color: #111827 !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+      #printArea {
+        display: block !important;
+        color: #111827 !important;
+        background: #ffffff !important;
+        padding: 24px !important;
+      }
+    }
+  </style>
+</head>
+<body class="text-zinc-100 font-sans antialiased selection:bg-amber-500/30 selection:text-amber-200 flex flex-col min-h-screen">
+
+  <!-- PRINT-ONLY CONTAINER FOR PDF/PRINT EXPORT -->
+  <div id="printArea" class="hidden"></div>
+
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2.5 max-w-sm w-full pointer-events-none px-4 sm:px-0 no-print"></div>
+
+  <!-- HEADER -->
+  <header class="sticky top-0 z-30 border-b border-zinc-800/80 bg-slate-950/90 backdrop-blur-xl no-print">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between py-3.5 gap-3">
+        
+        <!-- Brand Logo & Status -->
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3.5">
+            <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-amber-500/20 via-copper-500/20 to-zinc-900 border border-amber-500/40 flex items-center justify-center shadow-lg shadow-amber-500/10 shrink-0">
+              <svg class="w-6 h-6 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M8 22h8" />
+                <path d="M12 15v7" />
+                <path d="M12 15l8-10H4l8 10Z" />
+                <path d="M6.5 8h11" />
+                <path d="M15 2c0 1.5-1.5 2-1.5 3.5" class="text-amber-300/70" />
+              </svg>
+            </div>
+            <div>
+              <div class="flex items-center gap-2.5">
+                <h1 class="font-serif text-2xl sm:text-3xl font-bold tracking-wide bg-gradient-to-r from-amber-200 via-amber-400 to-copper-400 bg-clip-text text-transparent">
+                  Atelier Bar
+                </h1>
+                <span class="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] uppercase tracking-widest font-semibold bg-amber-500/10 text-amber-300 border border-amber-500/30">
+                  AI Mixology Lab
+                </span>
+              </div>
+              <p class="text-xs text-zinc-400">Цифровой домашний бар, AI-миксолог и облачная книга рецептов</p>
+            </div>
+          </div>
+
+          <!-- Mobile Settings & Status Trigger -->
+          <div class="flex items-center gap-2 md:hidden">
+            <button type="button" id="mobileSyncBadgeBtn" onclick="openSettingsModal('github')" class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-zinc-900/90 border border-zinc-800 text-zinc-300">
+              <span id="mobileSyncDot" class="w-2 h-2 rounded-full bg-amber-400"></span>
+              <span id="mobileSyncText">Local</span>
+            </button>
+            <button type="button" onclick="openSettingsModal('ai')" title="Настройки API и GitHub" class="p-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-amber-400 border border-zinc-800 transition-colors">
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3"></circle>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <nav class="flex items-center bg-zinc-900/90 p-1 rounded-xl border border-zinc-800/90 self-start md:self-auto w-full md:w-auto justify-between md:justify-start">
+          <button type="button" id="tabBtn-inventory" onclick="switchTab('inventory')" class="flex-1 md:flex-initial inline-flex items-center justify-center gap-2 px-3.5 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 bg-amber-500 text-slate-950 shadow-sm">
+            <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M8 2h8l2 4v14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V6l2-4z"/>
+              <path d="M6 10h12"/>
+              <path d="M6 15h12"/>
+            </svg>
+            <span>Барная полка</span>
+            <span id="navBadgeInventory" class="px-1.5 py-0.2 rounded-full text-[11px] font-bold bg-slate-950/20 text-slate-950">0</span>
+          </button>
+
+          <button type="button" id="tabBtn-generator" onclick="switchTab('generator')" class="flex-1 md:flex-initial inline-flex items-center justify-center gap-2 px-3.5 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 text-zinc-400 hover:text-zinc-100">
+            <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/>
+            </svg>
+            <span>Миксолог</span>
+          </button>
+
+          <button type="button" id="tabBtn-recipes" onclick="switchTab('recipes')" class="flex-1 md:flex-initial inline-flex items-center justify-center gap-2 px-3.5 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 text-zinc-400 hover:text-zinc-100">
+            <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/>
+            </svg>
+            <span>Книга рецептов</span>
+            <span id="navBadgeRecipes" class="px-1.5 py-0.2 rounded-full text-[11px] font-semibold bg-zinc-800 text-amber-400">0</span>
+          </button>
+        </nav>
+
+        <!-- Desktop Status Indicators & Settings Button -->
+        <div class="hidden md:flex items-center gap-2.5">
+          <!-- AI Engine Status Pill -->
+          <button type="button" onclick="openSettingsModal('ai')" title="Настроить AI провайдера" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-medium bg-zinc-900/90 hover:bg-zinc-800/90 border border-zinc-800 transition-colors">
+            <span id="aiStatusDot" class="w-2 h-2 rounded-full bg-amber-400"></span>
+            <span id="aiStatusText" class="text-zinc-300">AI: Offline Matrix</span>
+          </button>
+
+          <!-- GitHub Sync Status Pill -->
+          <button type="button" onclick="openSettingsModal('github')" title="Настроить синхронизацию с GitHub" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-medium bg-zinc-900/90 hover:bg-zinc-800/90 border border-zinc-800 transition-colors">
+            <span id="githubStatusDot" class="w-2 h-2 rounded-full bg-zinc-500"></span>
+            <span id="githubStatusText" class="text-zinc-300">Local Only</span>
+          </button>
+
+          <!-- Settings Button -->
+          <button type="button" onclick="openSettingsModal('ai')" title="Настройки API и GitHub" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium bg-zinc-900 hover:bg-zinc-800 text-zinc-200 hover:text-amber-400 border border-zinc-800 hover:border-amber-500/40 transition-all">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+            <span>Настройки</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 no-print">
+
+    <!-- ==========================================
+         TAB 1: БАРНАЯ ПОЛКА (INVENTORY)
+         ========================================== -->
+    <section id="tabPanel-inventory" class="space-y-6">
+      
+      <!-- Top Bar Summary & Controls -->
+      <div class="bg-zinc-900/80 border border-zinc-800/90 rounded-2xl p-4 sm:p-6 shadow-xl">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+          <div>
+            <div class="flex items-center gap-2.5">
+              <span class="text-xs uppercase tracking-widest font-semibold text-amber-400">Инвентаризация бара</span>
+              <span id="inventoryReadyBadge" class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                Готов к смешиванию
+              </span>
+            </div>
+            <h2 class="font-serif text-2xl sm:text-3xl font-bold text-zinc-100 mt-1">
+              Ваша барная полка и ароматика
+            </h2>
+            <p class="text-sm text-zinc-400 mt-0.5">
+              Отметьте ингредиенты и щепу в наличии — шеф-миксолог составит рецептуру строго из ваших запасов.
+            </p>
+          </div>
+
+          <!-- Quick Global Actions -->
+          <div class="flex flex-wrap items-center gap-2">
+            <button type="button" onclick="setAllInventory(true)" class="px-3.5 py-2 rounded-xl text-xs font-medium bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 transition-colors">
+              Выбрать всё
+            </button>
+            <button type="button" onclick="setAllInventory(false)" class="px-3.5 py-2 rounded-xl text-xs font-medium bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-zinc-700 transition-colors">
+              Сбросить всё
+            </button>
+            <button type="button" onclick="resetDefaultInventory()" class="px-3.5 py-2 rounded-xl text-xs font-medium bg-zinc-800/70 hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 border border-zinc-800 transition-colors">
+              Стартовый бар
+            </button>
+            <button type="button" onclick="switchTab('generator')" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-gradient-to-r from-amber-500 to-copper-500 hover:from-amber-400 hover:to-copper-400 text-slate-950 shadow-md shadow-amber-500/10 transition-all">
+              <span>Перейти к миксологу</span>
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Filter & Custom Add Bar -->
+        <div class="mt-5 pt-5 border-t border-zinc-800/80 grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
+          
+          <!-- Filter Toggle: Все / Только в наличии -->
+          <div class="md:col-span-4 flex items-center bg-slate-950/80 p-1 rounded-xl border border-zinc-800">
+            <button type="button" id="invFilterBtn-all" onclick="setInventoryFilter('all')" class="flex-1 py-1.5 px-3 rounded-lg text-xs font-medium transition-all bg-amber-500 text-slate-950">
+              Все (<span id="countAllIngredients">0</span>)
+            </button>
+            <button type="button" id="invFilterBtn-inStock" onclick="setInventoryFilter('inStock')" class="flex-1 py-1.5 px-3 rounded-lg text-xs font-medium transition-all text-zinc-400 hover:text-zinc-200">
+              Только в наличии (<span id="countInStockIngredients">0</span>)
+            </button>
+          </div>
+
+          <!-- Search Input -->
+          <div class="md:col-span-4 relative">
+            <svg class="w-4 h-4 text-zinc-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+            </svg>
+            <input
+              type="text"
+              id="inventorySearchInput"
+              oninput="handleInventorySearch(this.value)"
+              placeholder="Поиск ингредиента или щепы..."
+              class="w-full pl-9 pr-8 py-2 bg-slate-950/90 border border-zinc-800 focus:border-amber-500/60 rounded-xl text-xs sm:text-sm text-zinc-200 placeholder-zinc-500 focus:outline-none"
+            />
+            <button type="button" id="clearInvSearchBtn" onclick="handleInventorySearch('')" class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 text-xs px-1">
+              ✕
+            </button>
+          </div>
+
+          <!-- Add Custom Ingredient Form -->
+          <form onsubmit="handleAddCustomIngredient(event)" class="md:col-span-4 flex items-center gap-2">
+            <select
+              id="customIngredientCategory"
+              aria-label="Категория нового ингредиента"
+              class="w-36 sm:w-40 py-2 px-2.5 bg-slate-950/90 border border-zinc-800 focus:border-amber-500/60 rounded-xl text-xs text-zinc-300 focus:outline-none truncate"
+            >
+              <option value="spirits">Крепкая база</option>
+              <option value="liqueurs">Ликеры и вермуты</option>
+              <option value="syrups">Сиропы</option>
+              <option value="mixers">Кислотность / миксеры</option>
+              <option value="bitters">Биттеры / травы</option>
+              <option value="smoke">Окуривание / дым</option>
+            </select>
+            <input
+              type="text"
+              id="customIngredientName"
+              placeholder="+ Свой ингредиент..."
+              class="flex-1 min-w-0 py-2 px-3 bg-slate-950/90 border border-zinc-800 focus:border-amber-500/60 rounded-xl text-xs sm:text-sm text-zinc-200 placeholder-zinc-500 focus:outline-none"
+            />
+            <button
+              type="submit"
+              class="shrink-0 px-3 py-2 rounded-xl text-xs font-semibold bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 transition-colors"
+            >
+              Добавить
+            </button>
+          </form>
+
+        </div>
+      </div>
+
+      <!-- Categories Grid -->
+      <div id="inventoryCategoriesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <!-- Populated dynamically by renderInventory() -->
+      </div>
+    </section>
+
+    <!-- ==========================================
+         TAB 2: МИКСОЛОГ / ГЕНЕРАТОР (LAB)
+         ========================================== -->
+    <section id="tabPanel-generator" class="hidden space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        
+        <!-- Left Column: Mixology Controls -->
+        <div class="lg:col-span-5 bg-zinc-900/85 border border-zinc-800/90 rounded-2xl p-5 sm:p-6 shadow-xl space-y-5">
+          <div class="flex items-start justify-between gap-3 border-b border-zinc-800/80 pb-4">
+            <div>
+              <span class="text-xs uppercase tracking-widest font-semibold text-amber-400">Лаборатория вкуса</span>
+              <h2 class="font-serif text-2xl font-bold text-zinc-100 mt-0.5">Параметры генерации</h2>
+              <p class="text-xs text-zinc-400 mt-0.5">
+                В наличии выбрано: <strong id="labInStockCount" class="text-amber-300">0</strong> поз. (баз: <span id="labSpiritsCount">0</span>, миксеров/сиропов: <span id="labMixersCount">0</span>)
+              </p>
+            </div>
+            <button type="button" onclick="switchTab('inventory')" class="text-xs text-amber-400 hover:text-amber-300 underline underline-offset-4 shrink-0">
+              Изменить полку
+            </button>
+          </div>
+
+          <!-- 1. Mood / Vibe Selector -->
+          <div>
+            <label class="block text-xs uppercase tracking-wider font-semibold text-zinc-400 mb-2.5">
+              1. Настроение и профиль коктейля
+            </label>
+            <div id="moodSelectorGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <!-- Populated by renderMoodSelector() -->
+            </div>
+          </div>
+
+          <!-- 2. Smoke & Aromatics Selector -->
+          <div>
+            <label class="block text-xs uppercase tracking-wider font-semibold text-zinc-400 mb-2.5">
+              2. Окуривание и ароматическая подача
+            </label>
+            <div id="smokeSelectorGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              <!-- Populated by renderSmokeSelector() -->
+            </div>
+          </div>
+
+          <!-- 3. Preferred Base & Custom Note -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+            <div>
+              <label for="preferredSpiritSelect" class="block text-xs font-medium text-zinc-400 mb-1.5">
+                Приоритетная база
+              </label>
+              <select
+                id="preferredSpiritSelect"
+                onchange="handlePreferredSpiritChange(this.value)"
+                class="w-full py-2 px-3 bg-slate-950 border border-zinc-800 focus:border-amber-500/60 rounded-xl text-xs sm:text-sm text-zinc-200 focus:outline-none"
+              >
+                <option value="auto">На выбор шеф-миксолога</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="generatorEngineSelect" class="block text-xs font-medium text-zinc-400 mb-1.5">
+                Движок генерации
+              </label>
+              <select
+                id="generatorEngineSelect"
+                onchange="handleGeneratorEngineChange(this.value)"
+                class="w-full py-2 px-3 bg-slate-950 border border-zinc-800 focus:border-amber-500/60 rounded-xl text-xs sm:text-sm text-zinc-200 focus:outline-none"
+              >
+                <option value="auto">Авто (AI при наличии ключа)</option>
+                <option value="ai">Строго AI API (DeepSeek / OpenAI / Gemini)</option>
+                <option value="offline">Алгоритмический Шеф (Оффлайн)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Custom Wish Input -->
+          <div>
+            <label for="customMixologyPrompt" class="block text-xs font-medium text-zinc-400 mb-1.5">
+              Пожелание шефу (необязательно)
+            </label>
+            <input
+              type="text"
+              id="customMixologyPrompt"
+              placeholder="Напр.: баланс посуше, акцент на лаванду и розмарин..."
+              class="w-full py-2 px-3.5 bg-slate-950 border border-zinc-800 focus:border-amber-500/60 rounded-xl text-xs sm:text-sm text-zinc-200 placeholder-zinc-500 focus:outline-none"
+            />
+          </div>
+
+          <!-- Big CTA Button -->
+          <div class="pt-2">
+            <button
+              type="button"
+              id="generateCocktailBtn"
+              onclick="generateCocktail()"
+              class="w-full py-4 px-6 rounded-2xl font-semibold text-sm sm:text-base bg-gradient-to-r from-amber-500 via-amber-400 to-copper-500 hover:from-amber-400 hover:via-amber-300 hover:to-copper-400 text-slate-950 shadow-lg shadow-amber-500/20 amber-glow transition-all duration-200 flex items-center justify-center gap-3 group"
+            >
+              <svg class="w-5 h-5 transition-transform duration-300 group-hover:rotate-12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/>
+              </svg>
+              <span id="generateBtnLabel">Смешать авторский коктейль</span>
+            </button>
+            <p id="generatorEngineHint" class="text-[11px] text-center text-zinc-500 mt-2">
+              Золотое сечение баланса • Строго из ингредиентов в наличии
+            </p>
+          </div>
+        </div>
+
+        <!-- Right Column: Generated Cocktail Card / Skeleton -->
+        <div class="lg:col-span-7">
+          
+          <!-- Loading Skeleton State -->
+          <div id="generatorSkeleton" class="hidden bg-zinc-900/90 border border-amber-500/30 rounded-2xl p-6 sm:p-8 shadow-2xl">
+            <div class="flex flex-col items-center text-center py-8 space-y-5">
+              <div class="relative w-20 h-20 rounded-2xl bg-amber-500/10 border border-amber-500/40 flex items-center justify-center">
+                <svg class="w-10 h-10 text-amber-400 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                  <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+                </svg>
+              </div>
+              <div class="space-y-2 max-w-md">
+                <span class="text-xs uppercase tracking-widest text-amber-400 font-semibold">Миксология в процессе</span>
+                <h3 id="skeletonStatusTitle" class="font-serif text-2xl font-bold text-zinc-100">
+                  Выстраиваем золотое сечение баланса...
+                </h3>
+                <p id="skeletonStatusSub" class="text-xs sm:text-sm text-zinc-400">
+                  Подбираем пропорции крепкой части, кислотности и ароматического дыма под ваш бокал.
+                </p>
+              </div>
+              <div class="w-full max-w-md space-y-3 pt-4">
+                <div class="h-3 bg-zinc-800 rounded-full overflow-hidden">
+                  <div class="h-full bg-gradient-to-r from-amber-500 to-copper-500 w-2/3 animate-pulse rounded-full"></div>
+                </div>
+                <div class="grid grid-cols-3 gap-3 pt-2">
+                  <div class="h-16 bg-zinc-800/70 rounded-xl animate-pulse"></div>
+                  <div class="h-16 bg-zinc-800/70 rounded-xl animate-pulse"></div>
+                  <div class="h-16 bg-zinc-800/70 rounded-xl animate-pulse"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Active Generated Recipe Result Container -->
+          <div id="generatedRecipeContainer">
+            <!-- Populated dynamically by renderGeneratedRecipe() -->
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ==========================================
+         TAB 3: КНИГА РЕЦЕПТОВ (RECIPE BOOK & SYNC)
+         ========================================== -->
+    <section id="tabPanel-recipes" class="hidden space-y-6">
+      
+      <!-- Top Control Panel -->
+      <div class="bg-zinc-900/80 border border-zinc-800/90 rounded-2xl p-4 sm:p-6 shadow-xl space-y-4">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-xs uppercase tracking-widest font-semibold text-amber-400">Личный архив &amp; GitHub Cloud</span>
+              <span id="recipeBookSyncBadge" class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-zinc-800 text-zinc-300 border border-zinc-700">
+                Локальное хранилище
+              </span>
+            </div>
+            <h2 class="font-serif text-2xl sm:text-3xl font-bold text-zinc-100 mt-1">
+              Книга авторских рецептов
+            </h2>
+            <p class="text-sm text-zinc-400 mt-0.5">
+              Сохраняйте удачные миксы, ведите дегустационные заметки и синхронизируйте <code class="text-amber-300 bg-slate-950 px-1.5 py-0.5 rounded">recipes.json</code> напрямую с вашим GitHub репозиторием.
+            </p>
+          </div>
+
+          <!-- Cloud & File Actions -->
+          <div class="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onclick="syncFromGitHub()"
+              id="btnPullGitHub"
+              class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-medium bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 transition-colors"
+              title="Загрузить актуальный recipes.json из GitHub репозитория"
+            >
+              <svg class="w-4 h-4 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              <span>Pull из GitHub</span>
+            </button>
+
+            <button
+              type="button"
+              onclick="pushAllToGitHub()"
+              id="btnPushGitHub"
+              class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-medium bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 transition-colors"
+              title="Закоммитить текущую книгу рецептов в GitHub (recipes.json)"
+            >
+              <svg class="w-4 h-4 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+              <span>Push в GitHub</span>
+            </button>
+
+            <button
+              type="button"
+              onclick="exportRecipesJson()"
+              class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-medium bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 transition-colors"
+            >
+              <svg class="w-4 h-4 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/>
+              </svg>
+              <span>Скачать recipes.json</span>
+            </button>
+
+            <label
+              for="importRecipesFileInput"
+              class="cursor-pointer inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-medium bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 transition-colors"
+            >
+              <svg class="w-4 h-4 text-zinc-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+              </svg>
+              <span>Загрузить recipes.json</span>
+              <input type="file" id="importRecipesFileInput" accept=".json,application/json" onchange="handleImportRecipesFile(event)" class="hidden" />
+            </label>
+
+            <button
+              type="button"
+              onclick="openManualRecipeModal()"
+              class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-amber-500 hover:bg-amber-400 text-slate-950 transition-colors"
+            >
+              <span>+ Свой рецепт</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Search, Tag Filter & Sorting -->
+        <div class="pt-4 border-t border-zinc-800/80 grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
+          <div class="md:col-span-5 relative">
+            <svg class="w-4 h-4 text-zinc-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+            </svg>
+            <input
+              type="text"
+              id="recipeSearchInput"
+              oninput="handleRecipeSearch(this.value)"
+              placeholder="Поиск по названию, ингредиенту или тегу вкуса..."
+              class="w-full pl-9 pr-8 py-2 bg-slate-950/90 border border-zinc-800 focus:border-amber-500/60 rounded-xl text-xs sm:text-sm text-zinc-200 placeholder-zinc-500 focus:outline-none"
+            />
+          </div>
+
+          <!-- Tag Filters -->
+          <div id="recipeTagFilterBar" class="md:col-span-5 flex items-center gap-1.5 overflow-x-auto py-1">
+            <!-- Populated dynamically -->
+          </div>
+
+          <!-- Sort Select -->
+          <div class="md:col-span-2">
+            <select
+              id="recipeSortSelect"
+              aria-label="Сортировка рецептов"
+              onchange="handleRecipeSort(this.value)"
+              class="w-full py-2 px-3 bg-slate-950/90 border border-zinc-800 focus:border-amber-500/60 rounded-xl text-xs text-zinc-300 focus:outline-none"
+            >
+              <option value="newest">Сначала новые</option>
+              <option value="rating">По рейтингу (★)</option>
+              <option value="title">По алфавиту</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recipes Grid -->
+      <div id="recipesBookGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <!-- Populated dynamically by renderRecipesBook() -->
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="border-t border-zinc-900 bg-slate-950/80 py-5 mt-12 no-print">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-zinc-500">
+      <div class="flex items-center gap-2">
+        <span class="font-serif text-amber-400/90 font-semibold text-sm">Atelier Bar</span>
+        <span>•</span>
+        <span>Single-File SPA для GitHub Pages</span>
+      </div>
+      <div class="flex items-center gap-4">
+        <button type="button" onclick="openSettingsModal('ai')" class="hover:text-amber-400 transition-colors">AI API Настройки</button>
+        <button type="button" onclick="openSettingsModal('github')" class="hover:text-amber-400 transition-colors">GitHub Sync</button>
+        <button type="button" onclick="exportRecipesJson()" class="hover:text-amber-400 transition-colors">Экспорт JSON</button>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ==========================================
+       MODAL 1: НАСТРОЙКИ (AI API & GITHUB SYNC)
+       ========================================== -->
+  <div id="settingsModal" class="fixed inset-0 z-40 hidden items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md no-print">
+    <div class="bg-zinc-900 border border-zinc-800 rounded-2xl max-w-2xl w-full overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+      
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between px-6 py-4 border-b border-zinc-800 bg-slate-950/50">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          </div>
+          <div>
+            <h3 class="font-serif text-xl font-bold text-zinc-100">Настройки Atelier Bar</h3>
+            <p class="text-xs text-zinc-400">Все ключи и токены хранятся исключительно в вашем браузере (<code class="text-amber-300">localStorage</code>)</p>
+          </div>
+        </div>
+        <button type="button" onclick="closeSettingsModal()" class="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 transition-colors">
+          ✕
+        </button>
+      </div>
+
+      <!-- Modal Tabs -->
+      <div class="flex border-b border-zinc-800 bg-slate-950/30 px-6 pt-3 gap-2">
+        <button type="button" id="settingsTabBtn-ai" onclick="switchSettingsTab('ai')" class="px-4 py-2 text-xs sm:text-sm font-medium border-b-2 border-amber-500 text-amber-400 transition-colors">
+          AI Модели (API)
+        </button>
+        <button type="button" id="settingsTabBtn-github" onclick="switchSettingsTab('github')" class="px-4 py-2 text-xs sm:text-sm font-medium border-b-2 border-transparent text-zinc-400 hover:text-zinc-200 transition-colors">
+          GitHub Синхронизация (PAT)
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="p-6 overflow-y-auto space-y-5 flex-1">
+        
+        <!-- Settings Tab 1: AI Configuration -->
+        <div id="settingsPanel-ai" class="space-y-4">
+          <div class="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-xs text-amber-200/90 leading-relaxed">
+            <strong>Режим работы:</strong> Если API-ключ указан, генератор обращается к выбранной языковой модели с системным промптом шеф-миксолога. Если ключ не задан, автоматически работает <strong>встроенный алгоритмический миксолог</strong> по правилу золотого сечения коктейлей.
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label for="aiProviderSelect" class="block text-xs font-medium text-zinc-300 mb-1.5">Провайдер AI</label>
+              <select
+                id="aiProviderSelect"
+                onchange="handleAiProviderPreset(this.value)"
+                class="w-full py-2.5 px-3 bg-slate-950 border border-zinc-800 focus:border-amber-500 rounded-xl text-xs sm:text-sm text-zinc-100 focus:outline-none"
+              >
+                <option value="deepseek">DeepSeek API (По умолчанию)</option>
+                <option value="openai">OpenAI (ChatGPT API)</option>
+                <option value="gemini">Google Gemini API</option>
+                <option value="custom">Custom (OpenAI-совместимый)</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="aiModelInput" class="block text-xs font-medium text-zinc-300 mb-1.5">Модель (Model ID)</label>
+              <input
+                type="text"
+                id="aiModelInput"
+                placeholder="deepseek-chat"
+                class="w-full py-2.5 px-3 bg-slate-950 border border-zinc-800 focus:border-amber-500 rounded-xl text-xs sm:text-sm text-zinc-100 focus:outline-none"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label for="aiEndpointInput" class="block text-xs font-medium text-zinc-300 mb-1.5">API Endpoint URL</label>
+            <input
+              type="url"
+              id="aiEndpointInput"
+              placeholder="https://api.deepseek.com/chat/completions"
+              class="w-full py-2.5 px-3 bg-slate-950 border border-zinc-800 focus:border-amber-500 rounded-xl text-xs sm:text-sm text-zinc-100 font-mono focus:outline-none"
+            />
+          </div>
+
+          <div>
+            <label for="aiApiKeyInput" class="block text-xs font-medium text-zinc-300 mb-1.5">API Key</label>
+            <div class="relative">
+              <input
+                type="password"
+                id="aiApiKeyInput"
+                placeholder="sk-..."
+                class="w-full py-2.5 pl-3 pr-20 bg-slate-950 border border-zinc-800 focus:border-amber-500 rounded-xl text-xs sm:text-sm text-zinc-100 font-mono focus:outline-none"
+              />
+              <button
+                type="button"
+                onclick="toggleSecretInput('aiApiKeyInput', this)"
+                class="absolute right-2.5 top-1/2 -translate-y-1/2 px-2 py-1 text-[11px] rounded bg-zinc-800 text-zinc-300 hover:text-amber-300"
+              >
+                Показать
+              </button>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap items-center justify-between gap-3 pt-2">
+            <button
+              type="button"
+              onclick="clearAiSettings()"
+              class="px-3.5 py-2 rounded-xl text-xs font-medium bg-zinc-800 hover:bg-zinc-700 text-zinc-300 transition-colors"
+            >
+              Сбросить ключ (Оффлайн-режим)
+            </button>
+            <button
+              type="button"
+              onclick="saveAiSettings()"
+              class="px-5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-md transition-colors"
+            >
+              Сохранить настройки AI
+            </button>
+          </div>
+        </div>
+
+        <!-- Settings Tab 2: GitHub Contents API -->
+        <div id="settingsPanel-github" class="hidden space-y-4">
+          <div class="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-xs text-emerald-200/90 space-y-1.5 leading-relaxed">
+            <div class="font-semibold text-emerald-300">Инструкция по настройке Fine-grained PAT:</div>
+            <ol class="list-decimal list-inside space-y-1 text-zinc-300">
+              <li>Перейдите в <strong>GitHub Settings → Developer settings → Personal access tokens → Fine-grained tokens</strong>.</li>
+              <li>Выберите <strong>Only select repositories</strong> и укажите ваш репозиторий для бара.</li>
+              <li>В разделе <strong>Repository permissions</strong> установите <strong>Contents: Read and write</strong>.</li>
+              <li>Скопируйте сгенерированный токен (<code class="text-emerald-300">github_pat_...</code> или <code class="text-emerald-300">ghp_...</code>) в поле ниже.</li>
+            </ol>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label for="ghOwnerInput" class="block text-xs font-medium text-zinc-300 mb-1.5">GitHub Owner / Username</label>
+              <input
+                type="text"
+                id="ghOwnerInput"
+                placeholder="например: alex-mixology"
+                class="w-full py-2.5 px-3 bg-slate-950 border border-zinc-800 focus:border-amber-500 rounded-xl text-xs sm:text-sm text-zinc-100 focus:outline-none"
+              />
+            </div>
+            <div>
+              <label for="ghRepoInput" class="block text-xs font-medium text-zinc-300 mb-1.5">Repository Name</label>
+              <input
+                type="text"
+                id="ghRepoInput"
+                placeholder="например: atelier-bar"
+                class="w-full py-2.5 px-3 bg-slate-950 border border-zinc-800 focus:border-amber-500 rounded-xl text-xs sm:text-sm text-zinc-100 focus:outline-none"
+              />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label for="ghBranchInput" class="block text-xs font-medium text-zinc-300 mb-1.5">Branch (Ветка)</label>
+              <input
+                type="text"
+                id="ghBranchInput"
+                placeholder="main"
+                value="main"
+                class="w-full py-2.5 px-3 bg-slate-950 border border-zinc-800 focus:border-amber-500 rounded-xl text-xs sm:text-sm text-zinc-100 font-mono focus:outline-none"
+              />
+            </div>
+            <div>
+              <label for="ghPathInput" class="block text-xs font-medium text-zinc-300 mb-1.5">File Path (Путь к файлу)</label>
+              <input
+                type="text"
+                id="ghPathInput"
+                placeholder="recipes.json"
+                value="recipes.json"
+                class="w-full py-2.5 px-3 bg-slate-950 border border-zinc-800 focus:border-amber-500 rounded-xl text-xs sm:text-sm text-zinc-100 font-mono focus:outline-none"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label for="ghTokenInput" class="block text-xs font-medium text-zinc-300 mb-1.5">Personal Access Token (Fine-grained PAT)</label>
+            <div class="relative">
+              <input
+                type="password"
+                id="ghTokenInput"
+                placeholder="github_pat_... или ghp_..."
+                class="w-full py-2.5 pl-3 pr-20 bg-slate-950 border border-zinc-800 focus:border-amber-500 rounded-xl text-xs sm:text-sm text-zinc-100 font-mono focus:outline-none"
+              />
+              <button
+                type="button"
+                onclick="toggleSecretInput('ghTokenInput', this)"
+                class="absolute right-2.5 top-1/2 -translate-y-1/2 px-2 py-1 text-[11px] rounded bg-zinc-800 text-zinc-300 hover:text-amber-300"
+              >
+                Показать
+              </button>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap items-center justify-between gap-3 pt-2">
+            <div class="flex items-center gap-2">
+              <button
+                type="button"
+                onclick="clearGitHubSettings()"
+                class="px-3.5 py-2 rounded-xl text-xs font-medium bg-zinc-800 hover:bg-zinc-700 text-zinc-300 transition-colors"
+              >
+                Отключить
+              </button>
+              <button
+                type="button"
+                id="testGhConnectionBtn"
+                onclick="testGitHubConnection()"
+                class="px-3.5 py-2 rounded-xl text-xs font-medium bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 transition-colors"
+              >
+                Проверить подключение
+              </button>
+            </div>
+            <button
+              type="button"
+              onclick="saveGitHubSettings()"
+              class="px-5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-md transition-colors"
+            >
+              Сохранить настройки GitHub
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       MODAL 2: ДЕТАЛЬНЫЙ ПРОСМОТР И РЕДАКТИРОВАНИЕ РЕЦЕПТА
+       ========================================== -->
+  <div id="recipeDetailModal" class="fixed inset-0 z-40 hidden items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md no-print">
+    <div id="recipeDetailModalContent" class="bg-zinc-900 border border-zinc-800 rounded-2xl max-w-3xl w-full overflow-hidden shadow-2xl flex flex-col max-h-[92vh]">
+      <!-- Populated dynamically by openRecipeDetailModal(id) -->
+    </div>
+  </div>
+
+  <!-- ==========================================
+       MODAL 3: РУЧНОЕ СОЗДАНИЕ РЕЦЕПТА
+       ========================================== -->
+  <div id="manualRecipeModal" class="fixed inset-0 z-40 hidden items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md no-print">
+    <div class="bg-zinc-900 border border-zinc-800 rounded-2xl max-w-2xl w-full overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-zinc-800 bg-slate-950/50">
+        <div>
+          <h3 class="font-serif text-xl font-bold text-zinc-100">Записать авторский рецепт</h3>
+          <p class="text-xs text-zinc-400">Добавьте собственную разработку в коллекцию и синхронизируйте с GitHub</p>
+        </div>
+        <button type="button" onclick="closeManualRecipeModal()" class="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800">✕</button>
+      </div>
+      <form onsubmit="handleSaveManualRecipe(event)" class="p-6 overflow-y-auto space-y-4 flex-1">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label for="manualTitle" class="block text-xs font-medium text-zinc-300 mb-1">Название коктейля *</label>
+            <input type="text" id="manualTitle" required placeholder="Напр.: Velvet Cherry Negroni" class="w-full py-2 px-3 bg-slate-950 border border-zinc-800 rounded-xl text-xs sm:text-sm text-zinc-100 focus:border-amber-500 focus:outline-none" />
+          </div>
+          <div>
+            <label for="manualTagline" class="block text-xs font-medium text-zinc-300 mb-1">Поэтичное описание (Tagline)</label>
+            <input type="text" id="manualTagline" placeholder="Бархатный биттер с холодным дымом вишни" class="w-full py-2 px-3 bg-slate-950 border border-zinc-800 rounded-xl text-xs sm:text-sm text-zinc-100 focus:border-amber-500 focus:outline-none" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div>
+            <label for="manualGlassware" class="block text-xs font-medium text-zinc-300 mb-1">Посуда подачи</label>
+            <select id="manualGlassware" class="w-full py-2 px-3 bg-slate-950 border border-zinc-800 rounded-xl text-xs sm:text-sm text-zinc-100 focus:outline-none">
+              <option value="Рокс / Олд фэшн">Рокс / Олд фэшн</option>
+              <option value="Купе (Шале)">Купе (Шале)</option>
+              <option value="Хайбол">Хайбол</option>
+              <option value="Ник и Нора">Ник и Нора</option>
+            </select>
+          </div>
+          <div>
+            <label for="manualMethod" class="block text-xs font-medium text-zinc-300 mb-1">Метод</label>
+            <select id="manualMethod" class="w-full py-2 px-3 bg-slate-950 border border-zinc-800 rounded-xl text-xs sm:text-sm text-zinc-100 focus:outline-none">
+              <option value="Стир (Stir)">Стир (Stir)</option>
+              <option value="Шейк (Shake)">Шейк (Shake)</option>
+              <option value="Билд (Build)">Билд (Build)</option>
+              <option value="Шейк и файн-стрейн">Шейк и файн-стрейн</option>
+            </select>
+          </div>
+          <div>
+            <label for="manualIce" class="block text-xs font-medium text-zinc-300 mb-1">Лед</label>
+            <select id="manualIce" class="w-full py-2 px-3 bg-slate-950 border border-zinc-800 rounded-xl text-xs sm:text-sm text-zinc-100 focus:outline-none">
+              <option value="Крупный прозрачный куб">Крупный прозрачный куб</option>
+              <option value="Без льда (Straight Up)">Без льда (Straight Up)</option>
+              <option value="Кубиковый лед">Кубиковый лед</option>
+              <option value="Дробленый (Краш)">Дробленый (Краш)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label for="manualTasteProfile" class="block text-xs font-medium text-zinc-300 mb-1">Профиль вкуса (через запятую)</label>
+            <input type="text" id="manualTasteProfile" placeholder="дымный, горько-сладкий, пряный" class="w-full py-2 px-3 bg-slate-950 border border-zinc-800 rounded-xl text-xs sm:text-sm text-zinc-100 focus:border-amber-500 focus:outline-none" />
+          </div>
+          <div>
+            <label for="manualGarnish" class="block text-xs font-medium text-zinc-300 mb-1">Гарнир (Garnish)</label>
+            <input type="text" id="manualGarnish" placeholder="Цедра апельсина и веточка розмарина" class="w-full py-2 px-3 bg-slate-950 border border-zinc-800 rounded-xl text-xs sm:text-sm text-zinc-100 focus:border-amber-500 focus:outline-none" />
+          </div>
+        </div>
+
+        <div>
+          <label for="manualSmokeNotes" class="block text-xs font-medium text-zinc-300 mb-1">Окуривание / Ароматика (Smoke Notes)</label>
+          <input type="text" id="manualSmokeNotes" placeholder="Холодный дым вишневой щепы под клошем 15 секунд" class="w-full py-2 px-3 bg-slate-950 border border-zinc-800 rounded-xl text-xs sm:text-sm text-zinc-100 focus:border-amber-500 focus:outline-none" />
+        </div>
+
+        <div>
+          <label for="manualProportions" class="block text-xs font-medium text-zinc-300 mb-1">Ингредиенты и пропорции (каждый с новой строки: Ингредиент | Объем | Ед.)</label>
+          <textarea id="manualProportions" rows="4" placeholder="Джин | 45 | мл&#10;Кампари | 25 | мл&#10;Сладкий вермут | 25 | мл&#10;Ангостура | 2 | дэш" class="w-full py-2 px-3 bg-slate-950 border border-zinc-800 rounded-xl text-xs sm:text-sm text-zinc-100 font-mono focus:border-amber-500 focus:outline-none"></textarea>
+        </div>
+
+        <div>
+          <label for="manualTechnique" class="block text-xs font-medium text-zinc-300 mb-1">Шаги приготовления (каждый шаг с новой строки)</label>
+          <textarea id="manualTechnique" rows="3" placeholder="Шаг 1: Охладить смесительный стакан и бокал Рокс.&#10;Шаг 2: Влить ингредиенты и перемешать методом стир 25 секунд.&#10;Шаг 3: Перелить на крупный куб льда и окурить вишневой щепой." class="w-full py-2 px-3 bg-slate-950 border border-zinc-800 rounded-xl text-xs sm:text-sm text-zinc-100 focus:border-amber-500 focus:outline-none"></textarea>
+        </div>
+
+        <div class="flex items-center justify-end gap-3 pt-2 border-t border-zinc-800">
+          <button type="button" onclick="closeManualRecipeModal()" class="px-4 py-2 rounded-xl text-xs font-medium bg-zinc-800 text-zinc-300 hover:bg-zinc-700">Отмена</button>
+          <button type="submit" class="px-5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold bg-amber-500 hover:bg-amber-400 text-slate-950">Сохранить в книгу</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       MODAL 4: ПОДТВЕРЖДЕНИЕ УДАЛЕНИЯ РЕЦЕПТА
+       ========================================== -->
+  <div id="deleteConfirmModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm no-print">
+    <div class="bg-zinc-900 border border-zinc-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-rose-500/15 border border-rose-500/30 flex items-center justify-center text-rose-400 shrink-0">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+        </div>
+        <div>
+          <h4 class="font-serif text-lg font-bold text-zinc-100">Удалить рецепт из коллекции?</h4>
+          <p id="deleteConfirmRecipeTitle" class="text-xs text-zinc-400 mt-0.5"></p>
+        </div>
+      </div>
+      <p class="text-xs text-zinc-400 leading-relaxed">
+        Рецепт будет удален из локальной книги. Если подключен GitHub токен, обновленный <code class="text-amber-300">recipes.json</code> будет автоматически синхронизирован с репозиторием.
+      </p>
+      <div class="flex items-center justify-end gap-2.5 pt-2">
+        <button type="button" onclick="closeDeleteConfirmModal()" class="px-4 py-2 rounded-xl text-xs font-medium bg-zinc-800 hover:bg-zinc-700 text-zinc-300">Отмена</button>
+        <button type="button" id="confirmDeleteRecipeBtn" onclick="confirmDeleteRecipe()" class="px-4 py-2 rounded-xl text-xs font-semibold bg-rose-500 hover:bg-rose-400 text-slate-950">Удалить рецепт</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       APPLICATION LOGIC (CLEAN ES6+ MODULE PATTERN)
+       ========================================== -->
+  <script>
+    // --- STORAGE KEYS ---
+    const STORAGE_KEYS = {
+      INVENTORY: 'atelier_bar_inventory_v1',
+      RECIPES: 'atelier_bar_recipes_v1',
+      AI_SETTINGS: 'atelier_bar_ai_settings_v1',
+      GH_SETTINGS: 'atelier_bar_gh_settings_v1',
+      LAST_GENERATED: 'atelier_bar_last_generated_v1'
+    };
+
+    // --- SAFE LOCALSTORAGE HELPERS ---
+    function safeGetStorage(key, fallback) {
+      try {
+        const raw = window.localStorage.getItem(key);
+        return raw ? JSON.parse(raw) : fallback;
+      } catch (e) {
+        return fallback;
+      }
+    }
+
+    function safeSetStorage(key, value) {
+      try {
+        window.localStorage.setItem(key, JSON.stringify(value));
+        return true;
+      } catch (e) {
+        return false;
+      }
+    }
+
+    // --- CATEGORY DEFINITIONS ---
+    const CATEGORIES = [
+      {
+        id: 'spirits',
+        title: '1. Крепкая база (Spirits)',
+        subtitle: 'Основа коктейля и безалкогольные дистилляты',
+        accent: 'amber',
+        icon: '<svg class="w-5 h-5 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 2h6l1 4v14a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2V6l1-4z"/><path d="M8 10h8"/><path d="M8 15h8"/></svg>'
+      },
+      {
+        id: 'liqueurs',
+        title: '2. Ликеры, вермуты и кордиалы',
+        subtitle: 'Модификаторы вкуса, глубина и ботаника',
+        accent: 'copper',
+        icon: '<svg class="w-5 h-5 text-orange-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 22h8"/><path d="M12 15v7"/><path d="M12 15l7-9H5l7 9Z"/><path d="M6.5 9h11"/></svg>'
+      },
+      {
+        id: 'syrups',
+        title: '3. Сиропы и подсластители',
+        subtitle: 'Текстура, сладость и ягодно-цветочные ноты',
+        accent: 'amber',
+        icon: '<svg class="w-5 h-5 text-amber-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>'
+      },
+      {
+        id: 'mixers',
+        title: '4. Кислотность и миксеры',
+        subtitle: 'Цитрусовый баланс, фреши, тоники и Calpis',
+        accent: 'emerald',
+        icon: '<svg class="w-5 h-5 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 3v18"/><path d="M3 12h18"/><path d="m5.6 5.6 12.8 12.8"/><path d="m18.4 5.6-12.8 12.8"/></svg>'
+      },
+      {
+        id: 'bitters',
+        title: '5. Биттеры и ароматика',
+        subtitle: 'Коктейльные специи и свежие пряные травы',
+        accent: 'emerald',
+        icon: '<svg class="w-5 h-5 text-emerald-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>'
+      },
+      {
+        id: 'smoke',
+        title: '6. Окуривание и спецэффекты',
+        subtitle: 'Щепа, смокер под клошем и фламбированная цедра',
+        accent: 'copper',
+        icon: '<svg class="w-5 h-5 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>'
+      }
+    ];
+
+    // --- DEFAULT INVENTORY PRESET ---
+    const DEFAULT_INVENTORY = [
+      // 1. Spirits
+      { id: 'sp_gin', name: 'Джин', category: 'spirits', inStock: true, isCustom: false },
+      { id: 'sp_na_gin', name: 'Безалкогольный джин', category: 'spirits', inStock: true, isCustom: false },
+      { id: 'sp_tequila_blanco', name: 'Текила бланко', category: 'spirits', inStock: true, isCustom: false },
+      { id: 'sp_tequila_repo', name: 'Текила репосадо', category: 'spirits', inStock: false, isCustom: false },
+      { id: 'sp_bourbon', name: 'Бурбон', category: 'spirits', inStock: true, isCustom: false },
+      { id: 'sp_white_rum', name: 'Белый ром', category: 'spirits', inStock: true, isCustom: false },
+      { id: 'sp_dark_rum', name: 'Темный ром', category: 'spirits', inStock: false, isCustom: false },
+      { id: 'sp_vodka', name: 'Водка', category: 'spirits', inStock: true, isCustom: false },
+      { id: 'sp_mezcal', name: 'Мескаль', category: 'spirits', inStock: true, isCustom: false },
+
+      // 2. Liqueurs, Vermouths & Cordials
+      { id: 'lq_campari', name: 'Кампари', category: 'liqueurs', inStock: true, isCustom: false },
+      { id: 'lq_sweet_vermouth', name: 'Сладкий вермут', category: 'liqueurs', inStock: true, isCustom: false },
+      { id: 'lq_dry_vermouth', name: 'Сухой вермут', category: 'liqueurs', inStock: false, isCustom: false },
+      { id: 'lq_triple_sec', name: 'Трипл сек', category: 'liqueurs', inStock: true, isCustom: false },
+      { id: 'lq_coffee', name: 'Кофейный ликер', category: 'liqueurs', inStock: false, isCustom: false },
+      { id: 'lq_amaro', name: 'Амаро', category: 'liqueurs', inStock: true, isCustom: false },
+
+      // 3. Syrups & Sweeteners
+      { id: 'sy_simple', name: 'Простой сахарный сироп', category: 'syrups', inStock: true, isCustom: false },
+      { id: 'sy_lavender', name: 'Лавандовый сироп', category: 'syrups', inStock: true, isCustom: false },
+      { id: 'sy_berry', name: 'Ягодный сироп (малина/ежевика)', category: 'syrups', inStock: true, isCustom: false },
+      { id: 'sy_vanilla', name: 'Ванильный сироп', category: 'syrups', inStock: false, isCustom: false },
+      { id: 'sy_honey', name: 'Медовый сироп', category: 'syrups', inStock: true, isCustom: false },
+      { id: 'sy_falernum', name: 'Фалернум', category: 'syrups', inStock: false, isCustom: false },
+
+      // 4. Acidity & Mixers
+      { id: 'mx_lime', name: 'Сок лайма', category: 'mixers', inStock: true, isCustom: false },
+      { id: 'mx_lemon', name: 'Сок лимона', category: 'mixers', inStock: true, isCustom: false },
+      { id: 'mx_grapefruit', name: 'Грейпфрутовый сок', category: 'mixers', inStock: true, isCustom: false },
+      { id: 'mx_tonic', name: 'Тоник', category: 'mixers', inStock: true, isCustom: false },
+      { id: 'mx_soda', name: 'Содовая', category: 'mixers', inStock: true, isCustom: false },
+      { id: 'mx_calpis', name: 'Calpis / азиатские концентраты', category: 'mixers', inStock: true, isCustom: false },
+      { id: 'mx_ginger_beer', name: 'Имбирное пиво', category: 'mixers', inStock: false, isCustom: false },
+
+      // 5. Bitters & Aromatics
+      { id: 'bt_angostura', name: 'Ангостура', category: 'bitters', inStock: true, isCustom: false },
+      { id: 'bt_peychauds', name: 'Пейшо', category: 'bitters', inStock: false, isCustom: false },
+      { id: 'bt_orange', name: 'Апельсиновый биттер', category: 'bitters', inStock: true, isCustom: false },
+      { id: 'bt_rosemary', name: 'Розмарин', category: 'bitters', inStock: true, isCustom: false },
+      { id: 'bt_mint', name: 'Мята', category: 'bitters', inStock: true, isCustom: false },
+      { id: 'bt_thyme', name: 'Тимьян', category: 'bitters', inStock: false, isCustom: false },
+
+      // 6. Aromatics & Smoke
+      { id: 'sm_cherry', name: 'Вишневая щепа', category: 'smoke', inStock: true, isCustom: false },
+      { id: 'sm_apple', name: 'Яблочная щепа', category: 'smoke', inStock: true, isCustom: false },
+      { id: 'sm_oak', name: 'Дуб', category: 'smoke', inStock: false, isCustom: false },
+      { id: 'sm_smoker', name: 'Электронный смокер/окуриватель', category: 'smoke', inStock: true, isCustom: false },
+      { id: 'sm_flame_peel', name: 'Пламя/цедра', category: 'smoke', inStock: true, isCustom: false }
+    ];
+
+    // --- STARTER SIGNATURE RECIPES ---
+    const STARTER_RECIPES = [
+      {
+        id: 'rec_1710000101',
+        title: 'Velvet Cherry Smoke',
+        tagline: 'Дымный ботанический сауэр с прованской лавандой и бархатной вишневой вуалью',
+        tasteProfile: ['дымный', 'кисло-сладкий', 'ботанический', 'цветочный'],
+        glassware: 'Купе (Шале)',
+        method: 'Шейк и файн-стрейн',
+        ice: 'Без льда (Straight Up)',
+        proportions: [
+          { ingredient: 'Джин', amount: '50', unit: 'мл' },
+          { ingredient: 'Сок лимона', amount: '25', unit: 'мл' },
+          { ingredient: 'Лавандовый сироп', amount: '20', unit: 'мл' },
+          { ingredient: 'Ангостура', amount: '2', unit: 'дэш' }
+        ],
+        technique: [
+          'Шаг 1: Охладить бокал Купе. В шейкер влить джин, свежевыжатый сок лимона, лавандовый сироп и добавить 2 дэш биттера Ангостура.',
+          'Шаг 2: Наполнить шейкер крупным льдом и энергично взбивать 12–15 секунд до обмерзания стенок.',
+          'Шаг 3: Процедить через файн-стрейнер в охлажденное шале и накрыть стеклянным клошем.',
+          'Шаг 4: Наполнить клош холодным дымом вишневой щепы через электронный смокер на 15 секунд перед подачей.'
+        ],
+        garnish: 'Опаленная веточка розмарина и эфирные масла цедры лимона',
+        smokeNotes: 'Холодный дым вишневой щепы в течение 15 секунд под клошем',
+        rating: 5,
+        userNotes: 'Идеальный баланс сухого можжевельника и цветочного послевкусия. Вишневая щепа дает тонкий аромат костра.',
+        createdAt: '2026-10-15T19:30:00Z'
+      },
+      {
+        id: 'rec_1710000102',
+        title: 'Oaxaca Amber Boulevard',
+        tagline: 'Строгий вечерний твист на Негрони с мескалем, амаро и фламбированной цедрой',
+        tasteProfile: ['крепкий и строгий', 'дымный', 'горько-сладкий'],
+        glassware: 'Рокс / Олд фэшн',
+        method: 'Стир (Stir)',
+        ice: 'Крупный прозрачный куб',
+        proportions: [
+          { ingredient: 'Мескаль', amount: '35', unit: 'мл' },
+          { ingredient: 'Бурбон', amount: '15', unit: 'мл' },
+          { ingredient: 'Кампари', amount: '20', unit: 'мл' },
+          { ingredient: 'Сладкий вермут', amount: '20', unit: 'мл' },
+          { ingredient: 'Апельсиновый биттер', amount: '2', unit: 'дэш' }
+        ],
+        technique: [
+          'Шаг 1: В смесительный стакан со льдом влить мескаль, бурбон, Кампари, сладкий вермут и апельсиновый биттер.',
+          'Шаг 2: Плавно перемешивать барной ложкой (метод стир) в течение 25–30 секунд для деликатного обводнения.',
+          'Шаг 3: Перелить напиток через джулеп-стрейнер в бокал Рокс на крупный прозрачный куб льда.',
+          'Шаг 4: Выжать эфирные масла апельсиновой цедры через открытое пламя над поверхностью коктейля.'
+        ],
+        garnish: 'Фламбированная цедра апельсина',
+        smokeNotes: 'Карамелизация эфирных масел цедры через пламя горелки и легкий дым яблочной щепы',
+        rating: 5,
+        userNotes: 'Бурбон смягчает землистость мескаля. Отличный дижестив.',
+        createdAt: '2026-10-17T21:15:00Z'
+      },
+      {
+        id: 'rec_1710000103',
+        title: 'Tokyo Botanical Highball',
+        tagline: 'Освежающий безалкогольный хайбол с Calpis, грейпфрутом и яблочным дымом',
+        tasteProfile: ['освежающий', 'безалкогольный', 'цитрусовый', 'сливочно-кислотный'],
+        glassware: 'Хайбол',
+        method: 'Билд / Короткий шейк',
+        ice: 'Крупный прозрачный куб',
+        proportions: [
+          { ingredient: 'Безалкогольный джин', amount: '50', unit: 'мл' },
+          { ingredient: 'Calpis / азиатские концентраты', amount: '25', unit: 'мл' },
+          { ingredient: 'Грейпфрутовый сок', amount: '30', unit: 'мл' },
+          { ingredient: 'Сок лайма', amount: '15', unit: 'мл' },
+          { ingredient: 'Содовая', amount: '70', unit: 'мл' }
+        ],
+        technique: [
+          'Шаг 1: Взбить в шейкере безалкогольный джин, концентрат Calpis, грейпфрутовый сок и сок лайма со льдом (5 секунд).',
+          'Шаг 2: Перелить в высокий охлажденный Хайбол со свежим крупным льдом.',
+          'Шаг 3: Долить ледяной содовой и аккуратно приподнять слои барной ложкой.',
+          'Шаг 4: Подать с коротким окуриванием яблочной щепой верхней кромки бокала.'
+        ],
+        garnish: 'Свежая мята и слайс розового грейпфрута',
+        smokeNotes: 'Легкая ароматизация бокала яблочной щепой (5 секунд)',
+        rating: 4,
+        userNotes: 'Calpis дает потрясающую шелковистую текстуру даже без алкоголя.',
+        createdAt: '2026-10-18T18:00:00Z'
+      }
+    ];
+
+    // --- MOOD & SMOKE OPTIONS ---
+    const MOOD_OPTIONS = [
+      { id: 'spirit_forward', label: 'Крепкий и строгий', desc: 'Old Fashioned / Negroni баланс', icon: '🥃' },
+      { id: 'refreshing_sour', label: 'Освежающий сауэр', desc: 'Яркий цитрус и шелковый шейк', icon: '🍋' },
+      { id: 'smoky_complex', label: 'Дымный и сложный', desc: 'Глубокая ароматика и окуривание', icon: '🔥' },
+      { id: 'berry_dessert', label: 'Десертный/ягодный', desc: 'Ягодные, медовые и цветочные ноты', icon: '🫐' },
+      { id: 'mocktail', label: 'Безалкогольный (Mocktail)', desc: 'Ботаника, цитрус и 0% ABV', icon: '🌿' }
+    ];
+
+    const SMOKE_OPTIONS = [
+      { id: 'auto', label: 'Авто (по полке)' },
+      { id: 'Вишневая щепа', label: 'Вишневая щепа' },
+      { id: 'Яблочная щепа', label: 'Яблочная щепа' },
+      { id: 'Дуб', label: 'Дубовая щепа' },
+      { id: 'Пламя/цедра', label: 'Пламя и цедра' },
+      { id: 'none', label: 'Без дыма' }
+    ];
+
+    // --- APPLICATION STATE ---
+    const state = {
+      activeTab: 'inventory',
+      inventory: [],
+      inventoryFilter: 'all', // 'all' | 'inStock'
+      inventorySearch: '',
+      selectedMood: 'smoky_complex',
+      selectedSmoke: 'auto',
+      preferredSpirit: 'auto',
+      generatorEngine: 'auto',
+      generatedRecipe: null,
+      servingMultiplier: 1,
+      recipes: [],
+      recipeSearch: '',
+      recipeTagFilter: 'all',
+      recipeSort: 'newest',
+      pendingDeleteId: null,
+      aiSettings: {
+        provider: 'deepseek',
+        endpoint: 'https://api.deepseek.com/chat/completions',
+        model: 'deepseek-chat',
+        apiKey: ''
+      },
+      ghSettings: {
+        owner: '',
+        repo: '',
+        branch: 'main',
+        path: 'recipes.json',
+        token: ''
+      }
+    };
+
+    // --- INITIALIZATION ---
+    function initApp() {
+      // Load Inventory
+      const savedInv = safeGetStorage(STORAGE_KEYS.INVENTORY, null);
+      if (Array.isArray(savedInv) && savedInv.length > 0) {
+        state.inventory = savedInv;
+      } else {
+        state.inventory = JSON.parse(JSON.stringify(DEFAULT_INVENTORY));
+        safeSetStorage(STORAGE_KEYS.INVENTORY, state.inventory);
+      }
+
+      // Load Recipes
+      const savedRecipes = safeGetStorage(STORAGE_KEYS.RECIPES, null);
+      if (Array.isArray(savedRecipes) && savedRecipes.length > 0) {
+        state.recipes = savedRecipes;
+      } else {
+        state.recipes = JSON.parse(JSON.stringify(STARTER_RECIPES));
+        safeSetStorage(STORAGE_KEYS.RECIPES, state.recipes);
+      }
+
+      // Load AI Settings
+      const savedAi = safeGetStorage(STORAGE_KEYS.AI_SETTINGS, null);
+      if (savedAi && typeof savedAi === 'object') {
+        state.aiSettings = { ...state.aiSettings, ...savedAi };
+      }
+
+      // Load GitHub Settings
+      const savedGh = safeGetStorage(STORAGE_KEYS.GH_SETTINGS, null);
+      if (savedGh && typeof savedGh === 'object') {
+        state.ghSettings = { ...state.ghSettings, ...savedGh };
+      }
+
+      // Load Last Generated Recipe or initialize with first starter recipe
+      const savedLastGen = safeGetStorage(STORAGE_KEYS.LAST_GENERATED, null);
+      if (savedLastGen && savedLastGen.title) {
+        state.generatedRecipe = savedLastGen;
+      } else {
+        state.generatedRecipe = JSON.parse(JSON.stringify(STARTER_RECIPES[0]));
+      }
+
+      renderAll();
+    }
+
+    function renderAll() {
+      updateStatusBadges();
+      renderInventory();
+      renderGeneratorControls();
+      renderGeneratedRecipe();
+      renderRecipesBook();
+    }
+
+    // --- TOAST NOTIFICATIONS ---
+    function showToast(message, type = 'info', subtitle = '') {
+      const container = document.getElementById('toastContainer');
+      if (!container) return;
+
+      const styles = {
+        success: 'border-emerald-500/50 bg-zinc-900/95 text-emerald-300',
+        error: 'border-rose-500/50 bg-zinc-900/95 text-rose-300',
+        warning: 'border-amber-500/50 bg-zinc-900/95 text-amber-300',
+        info: 'border-zinc-700 bg-zinc-900/95 text-zinc-200'
+      };
+      const icons = {
+        success: '<svg class="w-5 h-5 text-emerald-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>',
+        error: '<svg class="w-5 h-5 text-rose-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>',
+        warning: '<svg class="w-5 h-5 text-amber-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+        info: '<svg class="w-5 h-5 text-amber-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>'
+      };
+
+      const toast = document.createElement('div');
+      toast.className = `pointer-events-auto flex items-start gap-3 p-3.5 rounded-xl border shadow-2xl backdrop-blur-md transition-all duration-300 ${styles[type] || styles.info}`;
+      toast.innerHTML = `
+        ${icons[type] || icons.info}
+        <div class="flex-1 min-w-0">
+          <div class="text-xs sm:text-sm font-semibold text-zinc-100">${escapeHtml(message)}</div>
+          ${subtitle ? `<div class="text-[11px] text-zinc-400 mt-0.5 break-words">${escapeHtml(subtitle)}</div>` : ''}
+        </div>
+        <button type="button" class="text-zinc-500 hover:text-zinc-300 text-xs px-1" onclick="this.parentElement.remove()">✕</button>
+      `;
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        if (toast && toast.parentElement) {
+          toast.style.opacity = '0';
+          toast.style.transform = 'translateY(6px)';
+          setTimeout(() => toast.remove(), 250);
+        }
+      }, 4500);
+    }
+
+    function escapeHtml(str) {
+      if (str === null || str === undefined) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    // --- NAVIGATION & STATUS BADGES ---
+    function switchTab(tabId) {
+      state.activeTab = tabId;
+      const tabs = ['inventory', 'generator', 'recipes'];
+      tabs.forEach(t => {
+        const panel = document.getElementById(`tabPanel-${t}`);
+        const btn = document.getElementById(`tabBtn-${t}`);
+        if (panel) {
+          panel.classList.toggle('hidden', t !== tabId);
+        }
+        if (btn) {
+          if (t === tabId) {
+            btn.className = 'flex-1 md:flex-initial inline-flex items-center justify-center gap-2 px-3.5 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 bg-amber-500 text-slate-950 shadow-sm';
+          } else {
+            btn.className = 'flex-1 md:flex-initial inline-flex items-center justify-center gap-2 px-3.5 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 text-zinc-400 hover:text-zinc-100';
+          }
+        }
+      });
+
+      const invBadge = document.getElementById('navBadgeInventory');
+      if (invBadge) {
+        invBadge.className = tabId === 'inventory'
+          ? 'px-1.5 py-0.2 rounded-full text-[11px] font-bold bg-slate-950/20 text-slate-950'
+          : 'px-1.5 py-0.2 rounded-full text-[11px] font-semibold bg-zinc-800 text-amber-400';
+      }
+      const recBadge = document.getElementById('navBadgeRecipes');
+      if (recBadge) {
+        recBadge.className = tabId === 'recipes'
+          ? 'px-1.5 py-0.2 rounded-full text-[11px] font-bold bg-slate-950/20 text-slate-950'
+          : 'px-1.5 py-0.2 rounded-full text-[11px] font-semibold bg-zinc-800 text-amber-400';
+      }
+
+      if (tabId === 'generator') {
+        renderGeneratorControls();
+      } else if (tabId === 'recipes') {
+        renderRecipesBook();
+      }
+    }
+
+    function isGitHubConnected() {
+      const { owner, repo, token } = state.ghSettings;
+      return Boolean(owner && owner.trim() && repo && repo.trim() && token && token.trim());
+    }
+
+    function isAiConnected() {
+      return Boolean(state.aiSettings.apiKey && state.aiSettings.apiKey.trim());
+    }
+
+    function updateStatusBadges() {
+      const inStockCount = state.inventory.filter(i => i.inStock).length;
+      const totalCount = state.inventory.length;
+
+      const navInv = document.getElementById('navBadgeInventory');
+      if (navInv) navInv.textContent = `${inStockCount}/${totalCount}`;
+
+      const navRec = document.getElementById('navBadgeRecipes');
+      if (navRec) navRec.textContent = String(state.recipes.length);
+
+      // GitHub Status
+      const ghConnected = isGitHubConnected();
+      const ghDot = document.getElementById('githubStatusDot');
+      const ghText = document.getElementById('githubStatusText');
+      const mobDot = document.getElementById('mobileSyncDot');
+      const mobText = document.getElementById('mobileSyncText');
+      const bookBadge = document.getElementById('recipeBookSyncBadge');
+
+      if (ghConnected) {
+        if (ghDot) ghDot.className = 'w-2 h-2 rounded-full bg-emerald-400 animate-pulse';
+        if (ghText) ghText.textContent = `GitHub Connected (${state.ghSettings.owner}/${state.ghSettings.repo})`;
+        if (mobDot) mobDot.className = 'w-2 h-2 rounded-full bg-emerald-400';
+        if (mobText) mobText.textContent = 'GitHub Sync';
+        if (bookBadge) {
+          bookBadge.textContent = `GitHub: ${state.ghSettings.owner}/${state.ghSettings.repo} (${state.ghSettings.branch || 'main'})`;
+          bookBadge.className = 'px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-500/15 text-emerald-300 border border-emerald-500/30';
+        }
+      } else {
+        if (ghDot) ghDot.className = 'w-2 h-2 rounded-full bg-amber-400';
+        if (ghText) ghText.textContent = 'Local Only';
+        if (mobDot) mobDot.className = 'w-2 h-2 rounded-full bg-amber-400';
+        if (mobText) mobText.textContent = 'Local Only';
+        if (bookBadge) {
+          bookBadge.textContent = 'Local Only (Подключите GitHub PAT в настройках)';
+          bookBadge.className = 'px-2 py-0.5 rounded-full text-[11px] font-medium bg-zinc-800 text-zinc-400 border border-zinc-700';
+        }
+      }
+
+      // AI Status
+      const aiConnected = isAiConnected();
+      const aiDot = document.getElementById('aiStatusDot');
+      const aiText = document.getElementById('aiStatusText');
+      const engineHint = document.getElementById('generatorEngineHint');
+
+      if (aiConnected && state.generatorEngine !== 'offline') {
+        const providerNames = { deepseek: 'DeepSeek', openai: 'OpenAI', gemini: 'Gemini', custom: 'Custom AI' };
+        const pName = providerNames[state.aiSettings.provider] || 'AI API';
+        if (aiDot) aiDot.className = 'w-2 h-2 rounded-full bg-emerald-400 animate-pulse';
+        if (aiText) aiText.textContent = `AI: ${pName} (${state.aiSettings.model})`;
+        if (engineHint) engineHint.textContent = `Активен AI Шеф-миксолог (${pName} • ${state.aiSettings.model}) + Оффлайн фоллбек`;
+      } else {
+        if (aiDot) aiDot.className = 'w-2 h-2 rounded-full bg-amber-400';
+        if (aiText) aiText.textContent = 'AI: Алгоритмический Шеф';
+        if (engineHint) engineHint.textContent = 'Активен встроенный алгоритмический миксолог (Золотое сечение баланса • Оффлайн)';
+      }
+    }
+
+    // ==========================================
+    // TAB 1: INVENTORY MANAGEMENT
+    // ==========================================
+    function renderInventory() {
+      const grid = document.getElementById('inventoryCategoriesGrid');
+      if (!grid) return;
+
+      const totalAll = state.inventory.length;
+      const totalInStock = state.inventory.filter(i => i.inStock).length;
+
+      const countAllEl = document.getElementById('countAllIngredients');
+      const countInStockEl = document.getElementById('countInStockIngredients');
+      if (countAllEl) countAllEl.textContent = String(totalAll);
+      if (countInStockEl) countInStockEl.textContent = String(totalInStock);
+
+      // Update Filter Buttons
+      const btnAll = document.getElementById('invFilterBtn-all');
+      const btnStock = document.getElementById('invFilterBtn-inStock');
+      if (btnAll && btnStock) {
+        if (state.inventoryFilter === 'all') {
+          btnAll.className = 'flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold transition-all bg-amber-500 text-slate-950';
+          btnStock.className = 'flex-1 py-1.5 px-3 rounded-lg text-xs font-medium transition-all text-zinc-400 hover:text-zinc-200';
+        } else {
+          btnStock.className = 'flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold transition-all bg-amber-500 text-slate-950';
+          btnAll.className = 'flex-1 py-1.5 px-3 rounded-lg text-xs font-medium transition-all text-zinc-400 hover:text-zinc-200';
+        }
+      }
+
+      // Ready Status Badge
+      const readyBadge = document.getElementById('inventoryReadyBadge');
+      const spiritsInStock = state.inventory.filter(i => i.category === 'spirits' && i.inStock).length;
+      const mixersInStock = state.inventory.filter(i => (i.category === 'mixers' || i.category === 'syrups' || i.category === 'liqueurs') && i.inStock).length;
+      if (readyBadge) {
+        if (spiritsInStock > 0 && mixersInStock > 0) {
+          readyBadge.textContent = `В наличии ${totalInStock} поз. • Готов к генерации`;
+          readyBadge.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-emerald-500/15 text-emerald-300 border border-emerald-500/30';
+        } else {
+          readyBadge.textContent = 'Выберите хотя бы 1 базу и миксер';
+          readyBadge.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-amber-500/15 text-amber-300 border border-amber-500/30';
+        }
+      }
+
+      const searchQuery = state.inventorySearch.trim().toLowerCase();
+
+      grid.innerHTML = CATEGORIES.map(cat => {
+        const allCatItems = state.inventory.filter(item => item.category === cat.id);
+        const inStockCatCount = allCatItems.filter(item => item.inStock).length;
+
+        const visibleItems = allCatItems.filter(item => {
+          if (state.inventoryFilter === 'inStock' && !item.inStock) return false;
+          if (searchQuery && !item.name.toLowerCase().includes(searchQuery)) return false;
+          return true;
+        });
+
+        const chipsHtml = visibleItems.length > 0
+          ? visibleItems.map(item => {
+              const activeClass = item.inStock
+                ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 shadow-sm shadow-amber-500/10'
+                : 'bg-slate-950/70 text-zinc-400 border-zinc-800 hover:border-zinc-700 hover:text-zinc-200';
+              const checkIcon = item.inStock
+                ? '<span class="w-2 h-2 rounded-full bg-amber-400 shrink-0"></span>'
+                : '<span class="w-2 h-2 rounded-full border border-zinc-600 shrink-0"></span>';
+              const deleteBtn = item.isCustom
+                ? `<button type="button" onclick="removeCustomIngredient(event, '${escapeHtml(item.id)}')" title="Удалить пользовательский ингредиент" class="ml-1 text-zinc-500 hover:text-rose-400 px-1 rounded">✕</button>`
+                : '';
+
+              return `
+                <div class="inline-flex items-center rounded-xl border text-xs font-medium transition-all duration-150 ${activeClass}">
+                  <button
+                    type="button"
+                    onclick="toggleIngredient('${escapeHtml(item.id)}')"
+                    class="inline-flex items-center gap-2 px-3 py-1.5 text-left"
+                  >
+                    ${checkIcon}
+                    <span>${escapeHtml(item.name)}</span>
+                  </button>
+                  ${deleteBtn}
+                </div>
+              `;
+            }).join('')
+          : `<p class="text-xs text-zinc-500 italic py-2">Нет ингредиентов по текущему фильтру</p>`;
+
+        return `
+          <div class="bg-zinc-900/90 border border-zinc-800/90 hover:border-zinc-700/90 rounded-2xl p-5 flex flex-col justify-between shadow-lg transition-all">
+            <div>
+              <!-- Category Header -->
+              <div class="flex items-start justify-between gap-2 pb-3.5 border-b border-zinc-800/80">
+                <div class="flex items-center gap-2.5">
+                  <div class="w-9 h-9 rounded-xl bg-slate-950 border border-zinc-800 flex items-center justify-center shrink-0">
+                    ${cat.icon}
+                  </div>
+                  <div>
+                    <h3 class="text-sm font-semibold text-zinc-100">${escapeHtml(cat.title)}</h3>
+                    <p class="text-[11px] text-zinc-400">${escapeHtml(cat.subtitle)}</p>
+                  </div>
+                </div>
+                <span class="px-2 py-0.5 rounded-lg text-[11px] font-semibold bg-slate-950 text-amber-400 border border-zinc-800 shrink-0">
+                  ${inStockCatCount} / ${allCatItems.length}
+                </span>
+              </div>
+
+              <!-- Chips Container -->
+              <div class="flex flex-wrap gap-2 py-4">
+                ${chipsHtml}
+              </div>
+            </div>
+
+            <!-- Category Footer Actions -->
+            <div class="pt-3 border-t border-zinc-800/60 flex items-center justify-between text-[11px]">
+              <div class="flex items-center gap-3">
+                <button type="button" onclick="setCategoryInventory('${cat.id}', true)" class="text-amber-400/90 hover:text-amber-300 font-medium">
+                  Выбрать все
+                </button>
+                <span class="text-zinc-700">•</span>
+                <button type="button" onclick="setCategoryInventory('${cat.id}', false)" class="text-zinc-400 hover:text-zinc-200">
+                  Сбросить
+                </button>
+              </div>
+              <button type="button" onclick="focusCustomAddForCategory('${cat.id}')" class="text-zinc-400 hover:text-amber-300">
+                + Добавить
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function toggleIngredient(id) {
+      const target = state.inventory.find(i => i.id === id);
+      if (!target) return;
+      target.inStock = !target.inStock;
+      safeSetStorage(STORAGE_KEYS.INVENTORY, state.inventory);
+      renderInventory();
+      updateStatusBadges();
+    }
+
+    function setAllInventory(inStockStatus) {
+      state.inventory.forEach(item => { item.inStock = inStockStatus; });
+      safeSetStorage(STORAGE_KEYS.INVENTORY, state.inventory);
+      renderInventory();
+      updateStatusBadges();
+      showToast(
+        inStockStatus ? 'Все ингредиенты отмечены в наличии' : 'Инвентарь бара очищен',
+        'info'
+      );
+    }
+
+    function setCategoryInventory(catId, inStockStatus) {
+      state.inventory.forEach(item => {
+        if (item.category === catId) item.inStock = inStockStatus;
+      });
+      safeSetStorage(STORAGE_KEYS.INVENTORY, state.inventory);
+      renderInventory();
+      updateStatusBadges();
+    }
+
+    function resetDefaultInventory() {
+      const customItems = state.inventory.filter(i => i.isCustom);
+      state.inventory = [...JSON.parse(JSON.stringify(DEFAULT_INVENTORY)), ...customItems];
+      safeSetStorage(STORAGE_KEYS.INVENTORY, state.inventory);
+      renderInventory();
+      updateStatusBadges();
+      showToast('Восстановлен сбалансированный стартовый набор бара', 'success');
+    }
+
+    function setInventoryFilter(filterMode) {
+      state.inventoryFilter = filterMode;
+      renderInventory();
+    }
+
+    function handleInventorySearch(query) {
+      state.inventorySearch = query || '';
+      const input = document.getElementById('inventorySearchInput');
+      if (input && input.value !== state.inventorySearch) {
+        input.value = state.inventorySearch;
+      }
+      const clearBtn = document.getElementById('clearInvSearchBtn');
+      if (clearBtn) {
+        clearBtn.classList.toggle('hidden', !state.inventorySearch);
+      }
+      renderInventory();
+    }
+
+    function focusCustomAddForCategory(catId) {
+      const selectEl = document.getElementById('customIngredientCategory');
+      const inputEl = document.getElementById('customIngredientName');
+      if (selectEl) selectEl.value = catId;
+      if (inputEl) {
+        inputEl.focus();
+        inputEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+
+    function handleAddCustomIngredient(event) {
+      event.preventDefault();
+      const catEl = document.getElementById('customIngredientCategory');
+      const nameEl = document.getElementById('customIngredientName');
+      if (!catEl || !nameEl) return;
+
+      const name = nameEl.value.trim();
+      const category = catEl.value;
+      if (!name) {
+        showToast('Введите название ингредиента', 'warning');
+        return;
+      }
+
+      const duplicate = state.inventory.some(
+        i => i.name.toLowerCase() === name.toLowerCase() && i.category === category
+      );
+      if (duplicate) {
+        showToast('Такой ингредиент уже есть на полке', 'warning');
+        return;
+      }
+
+      const newItem = {
+        id: 'cust_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+        name,
+        category,
+        inStock: true,
+        isCustom: true
+      };
+      state.inventory.push(newItem);
+      safeSetStorage(STORAGE_KEYS.INVENTORY, state.inventory);
+      nameEl.value = '';
+      renderInventory();
+      updateStatusBadges();
+      showToast(`Добавлен ингредиент: ${name}`, 'success');
+    }
+
+    function removeCustomIngredient(event, id) {
+      event.stopPropagation();
+      const item = state.inventory.find(i => i.id === id);
+      if (!item) return;
+      state.inventory = state.inventory.filter(i => i.id !== id);
+      safeSetStorage(STORAGE_KEYS.INVENTORY, state.inventory);
+      renderInventory();
+      updateStatusBadges();
+      showToast(`Ингредиент «${item.name}» удален`, 'info');
+    }
+
+    // ==========================================
+    // TAB 2: MIXOLOGIST GENERATOR (AI + OFFLINE FALLBACK)
+    // ==========================================
+    function renderGeneratorControls() {
+      const inStock = state.inventory.filter(i => i.inStock);
+      const spirits = inStock.filter(i => i.category === 'spirits');
+      const mixersAndSyrups = inStock.filter(i => i.category !== 'spirits');
+
+      const countEl = document.getElementById('labInStockCount');
+      const spEl = document.getElementById('labSpiritsCount');
+      const mxEl = document.getElementById('labMixersCount');
+      if (countEl) countEl.textContent = String(inStock.length);
+      if (spEl) spEl.textContent = String(spirits.length);
+      if (mxEl) mxEl.textContent = String(mixersAndSyrups.length);
+
+      // Render Mood Selector
+      const moodGrid = document.getElementById('moodSelectorGrid');
+      if (moodGrid) {
+        moodGrid.innerHTML = MOOD_OPTIONS.map(m => {
+          const isSelected = state.selectedMood === m.id;
+          const cls = isSelected
+            ? 'bg-amber-500/20 border-amber-500/50 text-amber-200 shadow-sm shadow-amber-500/10'
+            : 'bg-slate-950/70 border-zinc-800 text-zinc-300 hover:border-zinc-700';
+          return `
+            <button
+              type="button"
+              onclick="selectMood('${m.id}')"
+              class="flex items-start gap-2.5 p-2.5 rounded-xl border text-left transition-all ${cls}"
+            >
+              <span class="text-base leading-none mt-0.5">${m.icon}</span>
+              <div class="min-w-0">
+                <div class="text-xs font-semibold truncate">${escapeHtml(m.label)}</div>
+                <div class="text-[10px] text-zinc-400 truncate">${escapeHtml(m.desc)}</div>
+              </div>
+            </button>
+          `;
+        }).join('');
+      }
+
+      // Render Smoke Selector
+      const smokeGrid = document.getElementById('smokeSelectorGrid');
+      if (smokeGrid) {
+        smokeGrid.innerHTML = SMOKE_OPTIONS.map(s => {
+          const isSelected = state.selectedSmoke === s.id;
+          const cls = isSelected
+            ? 'bg-amber-500/20 border-amber-500/50 text-amber-300 font-semibold'
+            : 'bg-slate-950/70 border-zinc-800 text-zinc-400 hover:text-zinc-200';
+          return `
+            <button
+              type="button"
+              onclick="selectSmoke('${s.id}')"
+              class="py-2 px-2.5 rounded-xl border text-xs text-center transition-all truncate ${cls}"
+            >
+              ${escapeHtml(s.label)}
+            </button>
+          `;
+        }).join('');
+      }
+
+      // Populate Preferred Spirit Select
+      const spiritSelect = document.getElementById('preferredSpiritSelect');
+      if (spiritSelect) {
+        const currentVal = state.preferredSpirit;
+        const optionsHtml = [
+          `<option value="auto">На выбор шеф-миксолога</option>`,
+          ...spirits.map(sp => `<option value="${escapeHtml(sp.name)}">${escapeHtml(sp.name)}</option>`)
+        ].join('');
+        spiritSelect.innerHTML = optionsHtml;
+        if (spirits.some(sp => sp.name === currentVal)) {
+          spiritSelect.value = currentVal;
+        } else {
+          state.preferredSpirit = 'auto';
+          spiritSelect.value = 'auto';
+        }
+      }
+
+      updateStatusBadges();
+    }
+
+    function selectMood(moodId) {
+      state.selectedMood = moodId;
+      renderGeneratorControls();
+    }
+
+    function selectSmoke(smokeId) {
+      state.selectedSmoke = smokeId;
+      renderGeneratorControls();
+    }
+
+    function handlePreferredSpiritChange(val) {
+      state.preferredSpirit = val;
+    }
+
+    function handleGeneratorEngineChange(val) {
+      state.generatorEngine = val;
+      updateStatusBadges();
+    }
+
+    // --- MAIN COCKTAIL GENERATION CONTROLLER ---
+    async function generateCocktail() {
+      const inStock = state.inventory.filter(i => i.inStock);
+      if (inStock.length < 2) {
+        showToast('Отметьте хотя бы 2–3 ингредиента на барной полке!', 'warning');
+        switchTab('inventory');
+        return;
+      }
+
+      const btn = document.getElementById('generateCocktailBtn');
+      const skeleton = document.getElementById('generatorSkeleton');
+      const resultContainer = document.getElementById('generatedRecipeContainer');
+      const customWishEl = document.getElementById('customMixologyPrompt');
+      const customWish = customWishEl ? customWishEl.value.trim() : '';
+
+      if (btn) btn.disabled = true;
+      if (skeleton) skeleton.classList.remove('hidden');
+      if (resultContainer) resultContainer.classList.add('hidden');
+
+      const useAi = (state.generatorEngine === 'ai') || (state.generatorEngine === 'auto' && isAiConnected());
+
+      try {
+        let recipe = null;
+        if (useAi) {
+          if (!isAiConnected()) {
+            showToast('API-ключ не задан — используем алгоритмический Шеф-генератор', 'warning');
+            await new Promise(r => setTimeout(r, 650));
+            recipe = generateOfflineCocktail(inStock, customWish);
+          } else {
+            try {
+              recipe = await generateAiCocktail(inStock, customWish);
+              showToast('Авторский рецепт создан AI шеф-миксологом', 'success');
+            } catch (aiErr) {
+              console.warn('AI Generation fallback triggered:', aiErr);
+              showToast(
+                'AI эндпоинт недоступен, рецепт сгенерирован оффлайн-миксологом',
+                'warning',
+                aiErr.message || ''
+              );
+              recipe = generateOfflineCocktail(inStock, customWish);
+            }
+          }
+        } else {
+          await new Promise(r => setTimeout(r, 650));
+          recipe = generateOfflineCocktail(inStock, customWish);
+          showToast('Авторский коктейль смешан алгоритмическим миксологом', 'success');
+        }
+
+        state.generatedRecipe = recipe;
+        state.servingMultiplier = 1;
+        safeSetStorage(STORAGE_KEYS.LAST_GENERATED, recipe);
+      } finally {
+        if (btn) btn.disabled = false;
+        if (skeleton) skeleton.classList.add('hidden');
+        if (resultContainer) resultContainer.classList.remove('hidden');
+        renderGeneratedRecipe();
+      }
+    }
+
+    // --- AI API CALL (DEEPSEEK / OPENAI / GEMINI) ---
+    async function generateAiCocktail(inStockItems, customWish) {
+      const moodObj = MOOD_OPTIONS.find(m => m.id === state.selectedMood) || MOOD_OPTIONS[0];
+      const grouped = {};
+      CATEGORIES.forEach(c => {
+        grouped[c.title] = inStockItems.filter(i => i.category === c.id).map(i => i.name);
+      });
+
+      const systemPrompt = `Ты — шеф-миксолог мирового уровня в премиальном баре "Atelier Bar".
+Твоя задача: разработать сбалансированный авторский коктейль СТРОГО из ингредиентов в наличии у пользователя.
+Правила миксологии:
+1. Используй ТОЛЬКО ингредиенты из переданного списка "В наличии" (разрешается добавлять только лед и воду).
+2. Соблюдай золотое сечение баланса коктейля (крепкая часть 45-60 мл : кислая часть 20-30 мл : сладкая часть/ликеры 15-25 мл : биттеры/миксеры).
+3. Подбери правильный бокал (Рокс / Олд фэшн / Купе / Хайбол), метод приготовления (Шейк / Стир / Билд) и лед.
+4. Детально опиши подачу и работу со смокером/щепой/пламенем, если они выбраны или есть в наличии.
+5. Ответь СТРОГО валидным JSON-объектом по следующей схеме без какого-либо текста вокруг:
+{
+  "id": "rec_${Date.now()}",
+  "title": "Поэтичное название коктейля",
+  "tagline": "Короткое описание вкусового профиля (1 предложение)",
+  "tasteProfile": ["тег1", "тег2", "тег3"],
+  "glassware": "Рокс / Олд фэшн / Купе / Хайбол",
+  "method": "Шейк / Стир / Билд",
+  "ice": "Крупный куб / Дробленый / Без льда",
+  "proportions": [
+    { "ingredient": "Название", "amount": "50", "unit": "мл" }
+  ],
+  "technique": [
+    "Шаг 1: ...",
+    "Шаг 2: ...",
+    "Шаг 3: ..."
+  ],
+  "garnish": "Описание гарнира",
+  "smokeNotes": "Детали окуривания щепой под клошем или работы с цедрой",
+  "rating": 5,
+  "userNotes": "",
+  "createdAt": "${new Date().toISOString()}"
+}`;
+
+      const userPrompt = `Ингредиенты в наличии:
+${JSON.stringify(grouped, null, 2)}
+
+Желаемое настроение коктейля: ${moodObj.label} (${moodObj.desc}).
+Предпочитаемая база: ${state.preferredSpirit === 'auto' ? 'Любая подходящая из наличия' : state.preferredSpirit}.
+Режим окуривания/дыма: ${state.selectedSmoke === 'auto' ? 'По наличию щепы/смокера' : (state.selectedSmoke === 'none' ? 'Без окуривания' : state.selectedSmoke)}.
+${customWish ? `Дополнительное пожелание гостя: ${customWish}` : ''}
+
+Верни только чистый JSON объект рецепта.`;
+
+      const { provider, endpoint, model, apiKey } = state.aiSettings;
+      let rawText = '';
+
+      if (provider === 'gemini' || endpoint.includes('generativelanguage.googleapis.com')) {
+        const geminiModel = model || 'gemini-2.5-flash';
+        const baseUrl = endpoint.includes('generativelanguage.googleapis.com')
+          ? endpoint
+          : `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent`;
+        const urlWithKey = baseUrl.includes('?key=') ? baseUrl : `${baseUrl}?key=${encodeURIComponent(apiKey)}`;
+
+        const resp = await fetch(urlWithKey, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            systemInstruction: { parts: [{ text: systemPrompt }] },
+            contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
+            generationConfig: { temperature: 0.8, responseMimeType: 'application/json' }
+          })
+        });
+
+        if (!resp.ok) {
+          throw new Error(`Gemini API HTTP ${resp.status}`);
+        }
+        const data = await resp.json();
+        rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      } else {
+        // OpenAI / DeepSeek compatible Chat Completions
+        const resp = await fetch(endpoint || 'https://api.deepseek.com/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`
+          },
+          body: JSON.stringify({
+            model: model || 'deepseek-chat',
+            messages: [
+              { role: 'system', content: systemPrompt },
+              { role: 'user', content: userPrompt }
+            ],
+            temperature: 0.8
+          })
+        });
+
+        if (!resp.ok) {
+          throw new Error(`API HTTP ${resp.status}`);
+        }
+        const data = await resp.json();
+        rawText = data?.choices?.[0]?.message?.content || '';
+      }
+
+      const parsed = parseAiRecipeJson(rawText);
+      return normalizeRecipeObject(parsed);
+    }
+
+    function parseAiRecipeJson(rawText) {
+      if (!rawText) throw new Error('Пустой ответ от модели');
+      let cleaned = rawText.trim();
+      const fencedMatch = cleaned.match(/```(?:json)?\s*([\s\S]*?)```/i);
+      if (fencedMatch && fencedMatch[1]) {
+        cleaned = fencedMatch[1].trim();
+      } else {
+        const firstBrace = cleaned.indexOf('{');
+        const lastBrace = cleaned.lastIndexOf('}');
+        if (firstBrace !== -1 && lastBrace > firstBrace) {
+          cleaned = cleaned.slice(firstBrace, lastBrace + 1);
+        }
+      }
+      return JSON.parse(cleaned);
+    }
+
+    function normalizeRecipeObject(obj) {
+      return {
+        id: obj.id || ('rec_' + Date.now()),
+        title: obj.title || 'Авторский коктейль Atelier',
+        tagline: obj.tagline || 'Сбалансированный авторский микс из домашнего бара',
+        tasteProfile: Array.isArray(obj.tasteProfile) && obj.tasteProfile.length > 0
+          ? obj.tasteProfile.map(String)
+          : ['авторский', 'сбалансированный'],
+        glassware: obj.glassware || 'Рокс / Олд фэшн',
+        method: obj.method || 'Шейк',
+        ice: obj.ice || 'Крупный куб',
+        proportions: Array.isArray(obj.proportions) && obj.proportions.length > 0
+          ? obj.proportions.map(p => ({
+              ingredient: String(p.ingredient || 'Ингредиент'),
+              amount: String(p.amount || '30'),
+              unit: String(p.unit || 'мл')
+            }))
+          : [{ ingredient: 'Джин', amount: '50', unit: 'мл' }],
+        technique: Array.isArray(obj.technique) && obj.technique.length > 0
+          ? obj.technique.map(String)
+          : ['Шаг 1: Смешать ингредиенты со льдом и подать в охлажденном бокале.'],
+        garnish: obj.garnish || 'Цедра цитруса',
+        smokeNotes: obj.smokeNotes || 'Без окуривания',
+        rating: Number(obj.rating) >= 1 && Number(obj.rating) <= 5 ? Number(obj.rating) : 5,
+        userNotes: obj.userNotes ? String(obj.userNotes) : '',
+        createdAt: obj.createdAt || new Date().toISOString()
+      };
+    }
+
+    // --- ALGORITHMIC OFFLINE MIXOLOGIST (GOLDEN RATIO MATRIX) ---
+    function pickRandom(arr, fallback) {
+      if (!Array.isArray(arr) || arr.length === 0) return fallback;
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    function generateOfflineCocktail(inStockItems, customWish) {
+      const byCat = cat => inStockItems.filter(i => i.category === cat).map(i => i.name);
+
+      const spiritsAll = byCat('spirits');
+      const alcSpirits = spiritsAll.filter(n => !n.toLowerCase().includes('безалкогольный'));
+      const nonAlcSpirits = spiritsAll.filter(n => n.toLowerCase().includes('безалкогольный'));
+      const liqueurs = byCat('liqueurs');
+      const syrups = byCat('syrups');
+      const mixers = byCat('mixers');
+      const bittersAndHerbs = byCat('bitters');
+      const smokes = byCat('smoke');
+
+      const acids = mixers.filter(n => n.toLowerCase().includes('сок') || n.toLowerCase().includes('грейпфрут') || n.toLowerCase().includes('calpis'));
+      const bubbles = mixers.filter(n => n.toLowerCase().includes('тоник') || n.toLowerCase().includes('содовая') || n.toLowerCase().includes('пиво'));
+      const herbs = bittersAndHerbs.filter(n => ['розмарин', 'мята', 'тимьян'].some(h => n.toLowerCase().includes(h)));
+      const bitters = bittersAndHerbs.filter(n => !herbs.includes(n));
+
+      const mood = state.selectedMood;
+
+      // Determine Base Spirit
+      let baseSpirit = 'Джин';
+      if (mood === 'mocktail') {
+        baseSpirit = nonAlcSpirits[0] || pickRandom(acids, 'Calpis / азиатские концентраты');
+      } else if (state.preferredSpirit !== 'auto' && spiritsAll.includes(state.preferredSpirit)) {
+        baseSpirit = state.preferredSpirit;
+      } else if (mood === 'smoky_complex') {
+        const smokyPref = alcSpirits.filter(s => ['Мескаль', 'Бурбон', 'Темный ром', 'Текила репосадо'].includes(s));
+        baseSpirit = pickRandom(smokyPref.length ? smokyPref : alcSpirits, spiritsAll[0] || 'Бурбон');
+      } else {
+        baseSpirit = pickRandom(alcSpirits.length ? alcSpirits : spiritsAll, 'Джин');
+      }
+
+      const chosenSyrup = pickRandom(syrups, 'Простой сахарный сироп');
+      const chosenAcid = pickRandom(acids, 'Сок лимона');
+      const chosenLiqueur = pickRandom(liqueurs, null);
+      const chosenBubble = pickRandom(bubbles, null);
+      const chosenBitter = pickRandom(bitters, null);
+      const chosenHerb = pickRandom(herbs, null);
+
+      // Determine Smoke protocol
+      let smokeNotes = 'Подача без окуривания — чистая ароматика эфирных масел на поверхности';
+      let isSmoked = false;
+      if (state.selectedSmoke !== 'none') {
+        const woodChips = smokes.filter(s => s.toLowerCase().includes('щепа') || s.toLowerCase().includes('дуб'));
+        const hasSmoker = smokes.some(s => s.toLowerCase().includes('смокер'));
+        const hasFlame = smokes.some(s => s.toLowerCase().includes('пламя'));
+
+        if (state.selectedSmoke !== 'auto') {
+          isSmoked = true;
+          smokeNotes = state.selectedSmoke === 'Пламя/цедра'
+            ? 'Карамелизация эфирных масел цедры над открытым пламенем горелки перед подачей'
+            : `Холодный дым (${state.selectedSmoke.toLowerCase()}) под клошем в течение 15 секунд${hasSmoker ? ' с использованием электронного смокера' : ''}`;
+        } else if (woodChips.length > 0 && (mood === 'smoky_complex' || mood === 'spirit_forward' || Math.random() > 0.25)) {
+          const chip = pickRandom(woodChips, 'Вишневая щепа');
+          isSmoked = true;
+          smokeNotes = `Холодный дым (${chip.toLowerCase()}) в течение 15 секунд под клошем${hasSmoker ? ' через электронный окуриватель' : ''}`;
+        } else if (hasFlame) {
+          smokeNotes = 'Фламбирование эфирных масел цедры через открытое пламя над бокалом';
+        }
+      }
+
+      // Build Proportions & Method by Mood Matrix
+      let proportions = [];
+      let glassware = 'Рокс / Олд фэшн';
+      let method = 'Шейк';
+      let ice = 'Крупный прозрачный куб';
+      let tasteProfile = [];
+      let title = '';
+      let tagline = '';
+      let technique = [];
+
+      if (mood === 'spirit_forward') {
+        glassware = 'Рокс / Олд фэшн';
+        method = 'Стир (Stir)';
+        ice = 'Крупный прозрачный куб';
+        tasteProfile = ['крепкий и строгий', isSmoked ? 'дымный' : 'бархатный', 'пряный'];
+
+        proportions.push({ ingredient: baseSpirit, amount: '50', unit: 'мл' });
+        if (chosenLiqueur) {
+          proportions.push({ ingredient: chosenLiqueur, amount: '20', unit: 'мл' });
+          if (liqueurs.length > 1) {
+            const secondLiq = liqueurs.find(l => l !== chosenLiqueur);
+            if (secondLiq) proportions.push({ ingredient: secondLiq, amount: '15', unit: 'мл' });
+          } else {
+            proportions.push({ ingredient: chosenSyrup, amount: '10', unit: 'мл' });
+          }
+        } else {
+          proportions.push({ ingredient: chosenSyrup, amount: '12', unit: 'мл' });
+        }
+        if (chosenBitter) {
+          proportions.push({ ingredient: chosenBitter, amount: '3', unit: 'дэш' });
+        }
+
+        const poetAdjectives = ['Nocturne', 'Obsidian', 'Velvet Reserve', 'Atelier Old Fashioned', 'Copper Manhattan', 'Midnight Negroni'];
+        title = `${pickRandom(poetAdjectives, 'Atelier Reserve')} (${baseSpirit})`;
+        tagline = `Строгий медитативный коктейль на базе «${baseSpirit}» с глубоким балансом горечи и ${isSmoked ? 'дымным шлейфом' : 'пряной ароматикой'}.`;
+        technique = [
+          `Шаг 1: Охладить смесительный стакан льдом и слить талую воду. Влить ${baseSpirit} и модификаторы вкуса.`,
+          `Шаг 2: Плавно перемешивать барной ложкой методом Стир 25–30 секунд до идеального охлаждения и шелковистой текстуры.`,
+          `Шаг 3: Перелить через стрейнер в бокал Рокс на крупный прозрачный куб льда.`,
+          `Шаг 4: ${smokeNotes}.`
+        ];
+      } else if (mood === 'mocktail') {
+        glassware = chosenBubble ? 'Хайбол' : 'Купе (Шале)';
+        method = chosenBubble ? 'Шейк + Билд' : 'Шейк и файн-стрейн';
+        ice = chosenBubble ? 'Крупный прозрачный куб' : 'Без льда (Straight Up)';
+        tasteProfile = ['безалкогольный', 'освежающий', 'ботанический'];
+
+        if (nonAlcSpirits.length > 0) {
+          proportions.push({ ingredient: nonAlcSpirits[0], amount: '50', unit: 'мл' });
+        }
+        proportions.push({ ingredient: chosenAcid, amount: '25', unit: 'мл' });
+        proportions.push({ ingredient: chosenSyrup, amount: '20', unit: 'мл' });
+        if (chosenBubble) {
+          proportions.push({ ingredient: chosenBubble, amount: '80', unit: 'мл' });
+        }
+
+        title = `Zero-Proof Botanical (${chosenSyrup.split(' ')[0]})`;
+        tagline = `Многослойный безалкогольный эликсир с яркой кислотностью и тонкими травяными полутонами.`;
+        technique = [
+          `Шаг 1: В шейкере соединить безалкогольную базу, ${chosenAcid.toLowerCase()} и ${chosenSyrup.toLowerCase()}.`,
+          `Шаг 2: Энергично взбить со льдом в течение 10 секунд и перелить в охлажденный бокал ${glassware}.`,
+          chosenBubble
+            ? `Шаг 3: Долить охлажденный ${chosenBubble.toLowerCase()} и аккуратно перемешать барной ложкой снизу вверх.`
+            : `Шаг 3: Процедить через двойное сито (файн-стрейн) для идеально гладкой текстуры.`,
+          `Шаг 4: ${smokeNotes}.`
+        ];
+      } else if (mood === 'berry_dessert') {
+        glassware = 'Купе (Шале)';
+        method = 'Шейк и файн-стрейн';
+        ice = 'Без льда (Straight Up)';
+        tasteProfile = ['ягодный', 'десертный', 'шелковистый', isSmoked ? 'дымный' : 'цветочный'];
+
+        const sweetPref = syrups.filter(s => ['Ягодный', 'Лавандовый', 'Ванильный', 'Медовый'].some(k => s.includes(k)));
+        const activeSyrup = pickRandom(sweetPref.length ? sweetPref : syrups, chosenSyrup);
+
+        proportions.push({ ingredient: baseSpirit, amount: '45', unit: 'мл' });
+        if (chosenLiqueur) proportions.push({ ingredient: chosenLiqueur, amount: '15', unit: 'мл' });
+        proportions.push({ ingredient: activeSyrup, amount: '22', unit: 'мл' });
+        proportions.push({ ingredient: chosenAcid, amount: '20', unit: 'мл' });
+        if (chosenBitter) proportions.push({ ingredient: chosenBitter, amount: '2', unit: 'дэш' });
+
+        title = `Crimson Atelier (${baseSpirit} & ${activeSyrup.split(' ')[0]})`;
+        tagline = `Глубокий десертно-ягодный коктейль с бархатным телом и ярким цитрусовым балансом.`;
+        technique = [
+          `Шаг 1: Влить в шейкер ${baseSpirit}, ${activeSyrup.toLowerCase()} и ${chosenAcid.toLowerCase()}.`,
+          `Шаг 2: Наполнить шейкер плотным льдом и активно взбивать 14 секунд для образования воздушной шапки.`,
+          `Шаг 3: Перелить через файн-стрейнер в предварительно охлажденный бокал Купе.`,
+          `Шаг 4: ${smokeNotes}.`
+        ];
+      } else if (mood === 'smoky_complex') {
+        glassware = 'Рокс / Олд фэшн';
+        method = 'Шейк и стрейн на крупный куб';
+        ice = 'Крупный прозрачный куб';
+        tasteProfile = ['дымный', 'сложный', 'кисло-сладкий', 'авторский'];
+
+        proportions.push({ ingredient: baseSpirit, amount: '50', unit: 'мл' });
+        if (chosenLiqueur) proportions.push({ ingredient: chosenLiqueur, amount: '15', unit: 'мл' });
+        proportions.push({ ingredient: chosenAcid, amount: '25', unit: 'мл' });
+        proportions.push({ ingredient: chosenSyrup, amount: '18', unit: 'мл' });
+        if (chosenBitter) proportions.push({ ingredient: chosenBitter, amount: '2', unit: 'дэш' });
+
+        title = `Smoked Alchemy (${baseSpirit})`;
+        tagline = `Сложная гастрономическая композиция с золотым сечением кисло-сладкого баланса и густым ароматом дыма.`;
+        technique = [
+          `Шаг 1: Соединить в шейкере ${baseSpirit}, ${chosenAcid.toLowerCase()}, ${chosenSyrup.toLowerCase()}${chosenLiqueur ? ' и ' + chosenLiqueur.toLowerCase() : ''}.`,
+          `Шаг 2: Взбить со льдом 12 секунд и процедить в бокал Рокс на цельный прозрачный куб льда.`,
+          `Шаг 3: Поместить бокал под клош и провести окуривание: ${smokeNotes}.`,
+          `Шаг 4: Выдержать напиток в дыму 15 секунд и открыть клош непосредственно перед дегустацией.`
+        ];
+      } else {
+        // refreshing_sour (Default Sour / Highball Golden Ratio)
+        const useHighball = Boolean(chosenBubble && Math.random() > 0.45);
+        glassware = useHighball ? 'Хайбол' : 'Купе (Шале)';
+        method = useHighball ? 'Шейк + Топ содовой/тоником' : 'Шейк и файн-стрейн';
+        ice = useHighball ? 'Кубиковый лед' : 'Без льда (Straight Up)';
+        tasteProfile = ['освежающий сауэр', 'цитрусовый', isSmoked ? 'дымный акцент' : 'ботанический'];
+
+        proportions.push({ ingredient: baseSpirit, amount: '50', unit: 'мл' });
+        proportions.push({ ingredient: chosenAcid, amount: '25', unit: 'мл' });
+        proportions.push({ ingredient: chosenSyrup, amount: '20', unit: 'мл' });
+        if (useHighball && chosenBubble) {
+          proportions.push({ ingredient: chosenBubble, amount: '60', unit: 'мл' });
+        } else if (chosenBitter) {
+          proportions.push({ ingredient: chosenBitter, amount: '2', unit: 'дэш' });
+        }
+
+        title = `Golden Ratio Sour (${baseSpirit})`;
+        tagline = `Безупречный баланс 2:1:1 между крепкой базой «${baseSpirit}», свежей кислотностью и ароматным сиропом.`;
+        technique = [
+          `Шаг 1: Охладить бокал ${glassware}. В шейкер влить ${baseSpirit}, ${chosenAcid.toLowerCase()} и ${chosenSyrup.toLowerCase()}.`,
+          `Шаг 2: Добавить лед и энергично шейковать 12–15 секунд до инея на стенках шейкера.`,
+          useHighball && chosenBubble
+            ? `Шаг 3: Перелить в Хайбол со свежим льдом и аккуратно долить ${chosenBubble.toLowerCase()}.`
+            : `Шаг 3: Процедить через файн-стрейнер в охлажденное шале без льда.`,
+          `Шаг 4: ${smokeNotes}.`
+        ];
+      }
+
+      const garnish = chosenHerb
+        ? `Свежая веточка (${chosenHerb.toLowerCase()}) и эфирные масла цедры цитруса`
+        : 'Спираль цедры цитруса, выраженная над поверхностью бокала';
+
+      return {
+        id: 'rec_' + Date.now(),
+        title,
+        tagline: customWish ? `${tagline} (Учтено: ${customWish})` : tagline,
+        tasteProfile,
+        glassware,
+        method,
+        ice,
+        proportions,
+        technique,
+        garnish,
+        smokeNotes,
+        rating: 5,
+        userNotes: customWish ? `Пожелание при генерации: ${customWish}` : '',
+        createdAt: new Date().toISOString()
+      };
+    }
+
+    // --- GLASSWARE SVG ILLUSTRATION HELPER ---
+    function getGlasswareSvg(glasswareName, isSmoked) {
+      const g = (glasswareName || '').toLowerCase();
+      const smokeOverlay = isSmoked
+        ? `<path d="M10 4 C10 1, 14 1, 14 -2" stroke="#f59e0b" stroke-width="1.2" stroke-linecap="round" class="smoke-wisp" fill="none"/>
+           <path d="M14 5 C14 2, 10 2, 10 -1" stroke="#fbbf24" stroke-width="1.2" stroke-linecap="round" class="smoke-wisp-delayed" fill="none"/>`
+        : '';
+
+      if (g.includes('купе') || g.includes('шале') || g.includes('ник')) {
+        return `
+          <svg class="w-14 h-14 text-amber-400 overflow-visible" viewBox="0 0 24 24" fill="none">
+            ${smokeOverlay}
+            <path d="M5 6h14c0 4.5-3.1 7.5-7 7.5S5 10.5 5 6Z" fill="rgba(245,158,11,0.18)" stroke="currentColor" stroke-width="1.6"/>
+            <path d="M6.2 8.5h11.6" stroke="#f59e0b" stroke-width="1.2" stroke-dasharray="2 2"/>
+            <path d="M12 13.5v6.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            <path d="M8 20h8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+        `;
+      }
+      if (g.includes('хайбол')) {
+        return `
+          <svg class="w-14 h-14 text-amber-400 overflow-visible" viewBox="0 0 24 24" fill="none">
+            ${smokeOverlay}
+            <rect x="7" y="4" width="10" height="16" rx="1.5" fill="rgba(245,158,11,0.15)" stroke="currentColor" stroke-width="1.6"/>
+            <path d="M7.5 8h9" stroke="#f59e0b" stroke-width="1.2"/>
+            <rect x="9" y="10" width="2.5" height="2.5" rx="0.4" stroke="#fcd34d" stroke-width="1"/>
+            <rect x="12" y="13.5" width="2.5" height="2.5" rx="0.4" stroke="#fcd34d" stroke-width="1"/>
+          </svg>
+        `;
+      }
+      // Default Rocks / Old Fashioned
+      return `
+        <svg class="w-14 h-14 text-amber-400 overflow-visible" viewBox="0 0 24 24" fill="none">
+          ${smokeOverlay}
+          <path d="M5 7h14l-1.2 12a2 2 0 0 1-2 1.8H8.2a2 2 0 0 1-2-1.8L5 7Z" fill="rgba(245,158,11,0.18)" stroke="currentColor" stroke-width="1.6"/>
+          <path d="M5.8 11h12.4" stroke="#f59e0b" stroke-width="1.2"/>
+          <rect x="9" y="12.2" width="6" height="5.2" rx="1" fill="rgba(253,224,71,0.15)" stroke="#fcd34d" stroke-width="1.2"/>
+        </svg>
+      `;
+    }
+
+    // --- RENDER GENERATED RECIPE CARD ---
+    function renderGeneratedRecipe() {
+      const container = document.getElementById('generatedRecipeContainer');
+      if (!container) return;
+
+      const rec = state.generatedRecipe;
+      if (!rec) {
+        container.innerHTML = '';
+        return;
+      }
+
+      const mult = state.servingMultiplier || 1;
+      const isSmoked = rec.smokeNotes && !rec.smokeNotes.toLowerCase().includes('без окуривания');
+      const alreadySaved = state.recipes.some(r => r.id === rec.id);
+
+      const proportionsHtml = (rec.proportions || []).map(p => {
+        const num = parseFloat(p.amount);
+        const scaledAmount = !isNaN(num) ? (Math.round(num * mult * 10) / 10) : p.amount;
+        return `
+          <div class="flex items-center justify-between py-2.5 px-3.5 rounded-xl bg-slate-950/70 border border-zinc-800/80">
+            <div class="flex items-center gap-2.5">
+              <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+              <span class="text-xs sm:text-sm font-medium text-zinc-100">${escapeHtml(p.ingredient)}</span>
+            </div>
+            <span class="text-xs sm:text-sm font-mono font-semibold text-amber-300 bg-amber-500/10 px-2.5 py-0.5 rounded-lg border border-amber-500/20">
+              ${escapeHtml(scaledAmount)} ${escapeHtml(p.unit)}
+            </span>
+          </div>
+        `;
+      }).join('');
+
+      const techniqueHtml = (rec.technique || []).map((step, idx) => `
+        <li class="flex items-start gap-3 text-xs sm:text-sm text-zinc-300 leading-relaxed">
+          <span class="w-6 h-6 rounded-lg bg-amber-500/15 border border-amber-500/30 text-amber-300 font-mono text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
+            ${idx + 1}
+          </span>
+          <span>${escapeHtml(step.replace(/^Шаг\s*\d+\s*:\s*/i, ''))}</span>
+        </li>
+      `).join('');
+
+      const tagsHtml = (rec.tasteProfile || []).map(tag => `
+        <span class="px-2.5 py-1 rounded-full text-[11px] font-medium bg-amber-500/15 text-amber-300 border border-amber-500/30">
+          #${escapeHtml(tag)}
+        </span>
+      `).join('');
+
+      const starsHtml = [1, 2, 3, 4, 5].map(star => `
+        <button
+          type="button"
+          onclick="setGeneratedRecipeRating(${star})"
+          class="text-lg transition-transform hover:scale-110 ${star <= (rec.rating || 5) ? 'text-amber-400' : 'text-zinc-600'}"
+          title="Оценка ${star} из 5"
+        >★</button>
+      `).join('');
+
+      container.innerHTML = `
+        <div class="bg-zinc-900/90 border border-zinc-800 rounded-2xl overflow-hidden shadow-2xl">
+          
+          <!-- Top Banner -->
+          <div class="p-6 sm:p-7 bg-gradient-to-br from-slate-950 via-zinc-900 to-amber-950/20 border-b border-zinc-800/80">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div class="flex items-start gap-4">
+                <div class="w-16 h-16 rounded-2xl bg-slate-950/90 border border-amber-500/30 flex items-center justify-center shrink-0 shadow-inner">
+                  ${getGlasswareSvg(rec.glassware, isSmoked)}
+                </div>
+                <div>
+                  <div class="flex flex-wrap items-center gap-1.5 mb-1.5">
+                    ${tagsHtml}
+                  </div>
+                  <h3 class="font-serif text-2xl sm:text-3xl font-bold text-zinc-100 leading-tight">
+                    ${escapeHtml(rec.title)}
+                  </h3>
+                  <p class="text-xs sm:text-sm text-zinc-300 italic mt-1">
+                    «${escapeHtml(rec.tagline)}»
+                  </p>
+                </div>
+              </div>
+
+              <!-- Save Button Top -->
+              <div class="flex sm:flex-col items-end gap-2 shrink-0">
+                <button
+                  type="button"
+                  onclick="saveCurrentRecipeToCollection()"
+                  class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
+                    alreadySaved
+                      ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                      : 'bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-md shadow-amber-500/10'
+                  }"
+                >
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+                  </svg>
+                  <span>${alreadySaved ? 'Сохранено в книге' : 'Сохранить в коллекцию'}</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- 3 Spec Pills: Glassware / Method / Ice -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 mt-5 pt-5 border-t border-zinc-800/80">
+              <div class="bg-slate-950/70 border border-zinc-800/90 rounded-xl p-3">
+                <span class="text-[10px] uppercase tracking-wider text-zinc-400 block">Посуда подачи</span>
+                <span class="text-xs sm:text-sm font-semibold text-zinc-100 mt-0.5 block">${escapeHtml(rec.glassware)}</span>
+              </div>
+              <div class="bg-slate-950/70 border border-zinc-800/90 rounded-xl p-3">
+                <span class="text-[10px] uppercase tracking-wider text-zinc-400 block">Метод смешивания</span>
+                <span class="text-xs sm:text-sm font-semibold text-amber-300 mt-0.5 block">${escapeHtml(rec.method)}</span>
+              </div>
+              <div class="bg-slate-950/70 border border-zinc-800/90 rounded-xl p-3">
+                <span class="text-[10px] uppercase tracking-wider text-zinc-400 block">Лед</span>
+                <span class="text-xs sm:text-sm font-semibold text-zinc-100 mt-0.5 block">${escapeHtml(rec.ice)}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Body: Proportions & Technique -->
+          <div class="p-6 sm:p-7 space-y-6">
+            
+            <!-- Proportions with Multiplier -->
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <h4 class="text-xs uppercase tracking-wider font-semibold text-amber-400">
+                  Рецептура и граммовки
+                </h4>
+                <div class="inline-flex items-center gap-1 bg-slate-950 p-1 rounded-lg border border-zinc-800 text-[11px]">
+                  <button type="button" onclick="setServingMultiplier(1)" class="px-2 py-0.5 rounded ${mult === 1 ? 'bg-amber-500 text-slate-950 font-bold' : 'text-zinc-400'}">1 порц.</button>
+                  <button type="button" onclick="setServingMultiplier(2)" class="px-2 py-0.5 rounded ${mult === 2 ? 'bg-amber-500 text-slate-950 font-bold' : 'text-zinc-400'}">2 порц.</button>
+                  <button type="button" onclick="setServingMultiplier(4)" class="px-2 py-0.5 rounded ${mult === 4 ? 'bg-amber-500 text-slate-950 font-bold' : 'text-zinc-400'}">4 порц.</button>
+                </div>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                ${proportionsHtml}
+              </div>
+            </div>
+
+            <!-- Step-by-step Technique -->
+            <div>
+              <h4 class="text-xs uppercase tracking-wider font-semibold text-amber-400 mb-3">
+                Технология приготовления
+              </h4>
+              <ol class="space-y-2.5 bg-slate-950/50 border border-zinc-800/80 rounded-xl p-4">
+                ${techniqueHtml}
+              </ol>
+            </div>
+
+            <!-- Smoke & Garnish Specification Box -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div class="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30">
+                <div class="flex items-center gap-2 text-xs font-semibold text-amber-300 mb-1">
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+                  <span>Протокол окуривания (Smoke Notes)</span>
+                </div>
+                <p class="text-xs text-zinc-200 leading-relaxed">${escapeHtml(rec.smokeNotes)}</p>
+              </div>
+
+              <div class="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
+                <div class="flex items-center gap-2 text-xs font-semibold text-emerald-300 mb-1">
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/></svg>
+                  <span>Гарнир и подача (Garnish)</span>
+                </div>
+                <p class="text-xs text-zinc-200 leading-relaxed">${escapeHtml(rec.garnish)}</p>
+              </div>
+            </div>
+
+            <!-- Tasting Rating & Notes before saving -->
+            <div class="pt-4 border-t border-zinc-800/80 grid grid-cols-1 sm:grid-cols-12 gap-4 items-center">
+              <div class="sm:col-span-4">
+                <span class="block text-xs text-zinc-400 mb-1">Предварительный рейтинг:</span>
+                <div class="flex items-center gap-1">
+                  ${starsHtml}
+                </div>
+              </div>
+              <div class="sm:col-span-8">
+                <label for="genUserNotesInput" class="block text-xs text-zinc-400 mb-1">Дегустационная заметка:</label>
+                <input
+                  type="text"
+                  id="genUserNotesInput"
+                  value="${escapeHtml(rec.userNotes || '')}"
+                  oninput="updateGeneratedRecipeNotes(this.value)"
+                  placeholder="Запишите впечатления о балансе, сладости или подаче..."
+                  class="w-full py-2 px-3 bg-slate-950 border border-zinc-800 focus:border-amber-500/60 rounded-xl text-xs text-zinc-200 focus:outline-none"
+                />
+              </div>
+            </div>
+
+            <!-- Bottom Actions Bar -->
+            <div class="pt-4 border-t border-zinc-800/80 flex flex-wrap items-center justify-between gap-3">
+              <div class="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onclick="copyRecipeToClipboard('${escapeHtml(rec.id)}', true)"
+                  class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-medium bg-zinc-800 hover:bg-zinc-700 text-zinc-200 transition-colors"
+                >
+                  <svg class="w-4 h-4 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                  <span>Скопировать текст</span>
+                </button>
+                <button
+                  type="button"
+                  onclick="printSingleRecipe('${escapeHtml(rec.id)}', true)"
+                  class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-medium bg-zinc-800 hover:bg-zinc-700 text-zinc-200 transition-colors"
+                >
+                  <svg class="w-4 h-4 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                  <span>PDF / Печать</span>
+                </button>
+              </div>
+
+              <button
+                type="button"
+                onclick="saveCurrentRecipeToCollection()"
+                class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold bg-gradient-to-r from-amber-500 to-copper-500 hover:from-amber-400 hover:to-copper-400 text-slate-950 shadow-lg transition-all"
+              >
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                <span>${alreadySaved ? 'Обновить в коллекции' : 'Сохранить в коллекцию (и GitHub)'}</span>
+              </button>
+            </div>
+
+          </div>
+        </div>
+      `;
+    }
+
+    function setServingMultiplier(mult) {
+      state.servingMultiplier = mult;
+      renderGeneratedRecipe();
+    }
+
+    function setGeneratedRecipeRating(stars) {
+      if (!state.generatedRecipe) return;
+      state.generatedRecipe.rating = stars;
+      safeSetStorage(STORAGE_KEYS.LAST_GENERATED, state.generatedRecipe);
+      renderGeneratedRecipe();
+    }
+
+    function updateGeneratedRecipeNotes(notes) {
+      if (!state.generatedRecipe) return;
+      state.generatedRecipe.userNotes = notes;
+      safeSetStorage(STORAGE_KEYS.LAST_GENERATED, state.generatedRecipe);
+    }
+
+    async function saveCurrentRecipeToCollection() {
+      if (!state.generatedRecipe) return;
+      const rec = JSON.parse(JSON.stringify(state.generatedRecipe));
+      if (!rec.createdAt) rec.createdAt = new Date().toISOString();
+
+      const existingIdx = state.recipes.findIndex(r => r.id === rec.id);
+      if (existingIdx !== -1) {
+        state.recipes[existingIdx] = rec;
+      } else {
+        state.recipes.unshift(rec);
+      }
+
+      safeSetStorage(STORAGE_KEYS.RECIPES, state.recipes);
+      updateStatusBadges();
+      renderGeneratedRecipe();
+      renderRecipesBook();
+
+      if (isGitHubConnected()) {
+        await commitRecipeToGitHub(rec, `Add recipe: ${rec.title}`);
+      } else {
+        showToast(
+          `Рецепт «${rec.title}» сохранен в коллекцию`,
+          'success',
+          'Локальное хранилище обновлено. Подключите GitHub PAT для облачной синхронизации.'
+        );
+      }
+    }
+
+    // ==========================================
+    // TAB 3: RECIPE BOOK & GITHUB CONTENTS API SYNC
+    // ==========================================
+
+    // UTF-8 Safe Base64 Encoding & Decoding (Strictly matching specification)
+    function encodeUtf8Base64(jsonString) {
+      return window.btoa(
+        encodeURIComponent(jsonString).replace(/%([0-9A-F]{2})/g, (match, p1) =>
+          String.fromCharCode('0x' + p1)
+        )
+      );
+    }
+
+    function decodeUtf8Base64(base64String) {
+      const clean = String(base64String || '').replace(/\s/g, '');
+      return decodeURIComponent(window.escape(window.atob(clean)));
+    }
+
+    // GitHub Contents API: Save / Commit Recipe following exact specification
+    async function commitRecipeToGitHub(newOrUpdatedRecipe, commitMessage) {
+      if (!isGitHubConnected()) {
+        showToast('Укажите GitHub Owner, Repo и PAT в настройках', 'warning');
+        openSettingsModal('github');
+        return false;
+      }
+
+      const { owner, repo, branch, path, token } = state.ghSettings;
+      const cleanBranch = (branch || 'main').trim();
+      const cleanPath = (path || 'recipes.json').trim().replace(/^\/+/, '');
+      const apiUrl = `https://api.github.com/repos/${encodeURIComponent(owner.trim())}/${encodeURIComponent(repo.trim())}/contents/${cleanPath}`;
+
+      showToast('Синхронизация с GitHub Contents API...', 'info', `${owner}/${repo}:${cleanPath}`);
+
+      try {
+        // Step 1: GET current file metadata & sha
+        const getResp = await fetch(`https://api.github.com/repos/${encodeURIComponent(owner.trim())}/${encodeURIComponent(repo.trim())}/contents/${cleanPath}?ref=${encodeURIComponent(cleanBranch)}`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token.trim()}`,
+            'Accept': 'application/vnd.github+json'
+          }
+        });
+
+        let currentSha = null;
+        let remoteRecipes = [];
+
+        if (getResp.status === 200) {
+          const fileData = await getResp.json();
+          currentSha = fileData.sha;
+          if (fileData.content) {
+            try {
+              const decodedJson = decodeUtf8Base64(fileData.content);
+              const parsed = JSON.parse(decodedJson);
+              if (Array.isArray(parsed)) {
+                remoteRecipes = parsed;
+              }
+            } catch (parseErr) {
+              remoteRecipes = [];
+            }
+          }
+        } else if (getResp.status === 404) {
+          // File does not exist yet -> initialize empty array []
+          remoteRecipes = [];
+          currentSha = null;
+        } else if (getResp.status === 401) {
+          showToast('Ошибка 401: Недействительный GitHub Personal Access Token (Bad Credentials)', 'error');
+          return false;
+        } else if (getResp.status === 403) {
+          showToast('Ошибка 403: Токену не хватает прав Contents: Read and write', 'error');
+          return false;
+        } else {
+          showToast(`Ошибка чтения из GitHub (HTTP ${getResp.status})`, 'error');
+          return false;
+        }
+
+        // Step 2: Update array (merge local recipes or add new recipe)
+        let updatedArray = [...state.recipes];
+        if (newOrUpdatedRecipe) {
+          // Ensure remote recipes not present locally are preserved as well
+          const mapById = new Map();
+          remoteRecipes.forEach(r => { if (r && r.id) mapById.set(r.id, r); });
+          state.recipes.forEach(r => { if (r && r.id) mapById.set(r.id, r); });
+          mapById.set(newOrUpdatedRecipe.id, newOrUpdatedRecipe);
+          updatedArray = Array.from(mapById.values());
+          state.recipes = updatedArray;
+          safeSetStorage(STORAGE_KEYS.RECIPES, state.recipes);
+        }
+
+        // Step 3: Encode JSON to Base64 with full Cyrillic support
+        const jsonString = JSON.stringify(updatedArray, null, 2);
+        const base64Content = encodeUtf8Base64(jsonString);
+
+        // Step 4: PUT updated content to GitHub Contents API
+        const putBody = {
+          message: commitMessage || `Update recipes.json (${updatedArray.length} recipes)`,
+          content: base64Content,
+          branch: cleanBranch
+        };
+        if (currentSha) {
+          putBody.sha = currentSha;
+        }
+
+        const putResp = await fetch(`https://api.github.com/repos/${encodeURIComponent(owner.trim())}/${encodeURIComponent(repo.trim())}/contents/${cleanPath}`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token.trim()}`,
+            'Accept': 'application/vnd.github+json',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(putBody)
+        });
+
+        if (putResp.ok) {
+          showToast(
+            'Успешно сохранено в GitHub репозиторий!',
+            'success',
+            `Коммит: "${putBody.message}" → ${cleanPath}`
+          );
+          renderRecipesBook();
+          updateStatusBadges();
+          return true;
+        } else if (putResp.status === 401) {
+          showToast('Ошибка 401: Bad Credentials — проверьте токен GitHub', 'error');
+        } else if (putResp.status === 404) {
+          showToast('Ошибка 404: Репозиторий или ветка не найдены (проверьте права Contents: Read & Write)', 'error');
+        } else if (putResp.status === 409) {
+          showToast('Ошибка 409: Конфликт версий SHA файла. Выполните Pull из GitHub и повторите.', 'warning');
+        } else {
+          showToast(`Ошибка записи в GitHub: HTTP ${putResp.status}`, 'error');
+        }
+        return false;
+      } catch (err) {
+        showToast('Сетевая ошибка при обращении к GitHub API', 'error', err.message || '');
+        return false;
+      }
+    }
+
+    async function pushAllToGitHub() {
+      await commitRecipeToGitHub(null, `Sync Atelier Bar recipes (${state.recipes.length} items)`);
+    }
+
+    async function syncFromGitHub() {
+      if (!isGitHubConnected()) {
+        showToast('Для загрузки из GitHub укажите Owner, Repo и PAT в настройках', 'warning');
+        openSettingsModal('github');
+        return;
+      }
+
+      const { owner, repo, branch, path, token } = state.ghSettings;
+      const cleanBranch = (branch || 'main').trim();
+      const cleanPath = (path || 'recipes.json').trim().replace(/^\/+/, '');
+      const apiUrl = `https://api.github.com/repos/${encodeURIComponent(owner.trim())}/${encodeURIComponent(repo.trim())}/contents/${cleanPath}?ref=${encodeURIComponent(cleanBranch)}`;
+
+      showToast('Загрузка recipes.json из GitHub...', 'info');
+      try {
+        const resp = await fetch(`https://api.github.com/repos/${encodeURIComponent(owner.trim())}/${encodeURIComponent(repo.trim())}/contents/${cleanPath}?ref=${encodeURIComponent(cleanBranch)}`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token.trim()}`,
+            'Accept': 'application/vnd.github+json'
+          }
+        });
+
+        if (resp.status === 200) {
+          const data = await resp.json();
+          const decoded = decodeUtf8Base64(data.content || '');
+          const parsed = JSON.parse(decoded);
+          if (Array.isArray(parsed)) {
+            state.recipes = parsed.map(normalizeRecipeObject);
+            safeSetStorage(STORAGE_KEYS.RECIPES, state.recipes);
+            renderRecipesBook();
+            updateStatusBadges();
+            showToast(`Загружено рецептов из GitHub: ${state.recipes.length}`, 'success');
+          } else {
+            showToast('Файл в репозитории не содержит массив рецептов', 'warning');
+          }
+        } else if (resp.status === 404) {
+          showToast('Файл recipes.json еще не создан в репозитории (404). Нажмите Push в GitHub для создания.', 'warning');
+        } else if (resp.status === 401) {
+          showToast('Ошибка 401: Неверный токен авторизации GitHub', 'error');
+        } else {
+          showToast(`Ошибка GitHub API: HTTP ${resp.status}`, 'error');
+        }
+      } catch (e) {
+        showToast('Не удалось загрузить файл из GitHub', 'error', e.message || '');
+      }
+    }
+
+    // --- LOCAL EXPORT / IMPORT FALLBACK ---
+    function exportRecipesJson() {
+      const dataStr = JSON.stringify(state.recipes, null, 2);
+      const blob = new Blob([dataStr], { type: 'application/json;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = state.ghSettings.path || 'recipes.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast(`Экспортирован файл recipes.json (${state.recipes.length} рец.)`, 'success');
+    }
+
+    function handleImportRecipesFile(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const content = e.target.result;
+          const parsed = JSON.parse(content);
+          const list = Array.isArray(parsed) ? parsed : [parsed];
+          const normalized = list.filter(Boolean).map(normalizeRecipeObject);
+          if (normalized.length === 0) {
+            showToast('В файле не найдено корректных рецептов', 'warning');
+            return;
+          }
+
+          const mapById = new Map();
+          state.recipes.forEach(r => mapById.set(r.id, r));
+          normalized.forEach(r => mapById.set(r.id, r));
+          state.recipes = Array.from(mapById.values());
+
+          safeSetStorage(STORAGE_KEYS.RECIPES, state.recipes);
+          renderRecipesBook();
+          updateStatusBadges();
+          showToast(`Импортировано рецептов: ${normalized.length}`, 'success');
+        } catch (err) {
+          showToast('Ошибка чтения JSON-файла: проверьте синтаксис', 'error');
+        } finally {
+          event.target.value = '';
+        }
+      };
+      reader.readAsText(file, 'utf-8');
+    }
+
+    // --- RENDER RECIPE BOOK ---
+    function renderRecipesBook() {
+      const grid = document.getElementById('recipesBookGrid');
+      const tagBar = document.getElementById('recipeTagFilterBar');
+      if (!grid) return;
+
+      // Collect unique tags
+      const tagCounts = new Map();
+      state.recipes.forEach(r => {
+        (r.tasteProfile || []).forEach(t => {
+          const clean = String(t).toLowerCase();
+          tagCounts.set(clean, (tagCounts.get(clean) || 0) + 1);
+        });
+      });
+      const topTags = Array.from(tagCounts.entries())
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 6)
+        .map(e => e[0]);
+
+      if (tagBar) {
+        const allTags = [
+          { id: 'all', label: 'Все рецепты' },
+          { id: '5stars', label: '5 ★ Избранные' },
+          ...topTags.map(t => ({ id: t, label: `#${t}` }))
+        ];
+        tagBar.innerHTML = allTags.map(t => {
+          const active = state.recipeTagFilter === t.id;
+          return `
+            <button
+              type="button"
+              onclick="setRecipeTagFilter('${escapeHtml(t.id)}')"
+              class="shrink-0 px-3 py-1.5 rounded-xl text-xs font-medium border transition-colors ${
+                active
+                  ? 'bg-amber-500 text-slate-950 border-amber-500 font-semibold'
+                  : 'bg-slate-950/70 text-zinc-400 border-zinc-800 hover:text-zinc-200'
+              }"
+            >
+              ${escapeHtml(t.label)}
+            </button>
+          `;
+        }).join('');
+      }
+
+      const q = state.recipeSearch.trim().toLowerCase();
+      let filtered = state.recipes.filter(r => {
+        if (state.recipeTagFilter === '5stars' && Number(r.rating) < 5) return false;
+        if (state.recipeTagFilter !== 'all' && state.recipeTagFilter !== '5stars') {
+          const hasTag = (r.tasteProfile || []).some(t => String(t).toLowerCase() === state.recipeTagFilter);
+          if (!hasTag) return false;
+        }
+        if (q) {
+          const inTitle = (r.title || '').toLowerCase().includes(q);
+          const inTagline = (r.tagline || '').toLowerCase().includes(q);
+          const inTags = (r.tasteProfile || []).some(t => String(t).toLowerCase().includes(q));
+          const inIng = (r.proportions || []).some(p => (p.ingredient || '').toLowerCase().includes(q));
+          return inTitle || inTagline || inTags || inIng;
+        }
+        return true;
+      });
+
+      // Sort
+      filtered.sort((a, b) => {
+        if (state.recipeSort === 'rating') {
+          return (Number(b.rating) || 0) - (Number(a.rating) || 0);
+        }
+        if (state.recipeSort === 'title') {
+          return String(a.title || '').localeCompare(String(b.title || ''), 'ru');
+        }
+        return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
+      });
+
+      if (filtered.length === 0) {
+        grid.innerHTML = `
+          <div class="col-span-full bg-zinc-900/60 border border-zinc-800 rounded-2xl p-10 text-center space-y-3">
+            <p class="font-serif text-2xl text-zinc-300">Рецепты не найдены</p>
+            <p class="text-xs text-zinc-500 max-w-md mx-auto">Попробуйте изменить фильтр поиска или сгенерируйте новый авторский коктейль во вкладке «Миксолог».</p>
+            <button type="button" onclick="switchTab('generator')" class="mt-2 inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold bg-amber-500 text-slate-950">
+              Перейти в генератор
+            </button>
+          </div>
+        `;
+        return;
+      }
+
+      grid.innerHTML = filtered.map(r => {
+        const isSmoked = r.smokeNotes && !r.smokeNotes.toLowerCase().includes('без окуривания');
+        const stars = [1, 2, 3, 4, 5].map(s => `
+          <button
+            type="button"
+            onclick="updateSavedRecipeRating('${escapeHtml(r.id)}', ${s})"
+            class="text-sm transition-transform hover:scale-125 ${s <= (r.rating || 5) ? 'text-amber-400' : 'text-zinc-700'}"
+            title="Оценить на ${s}"
+          >★</button>
+        `).join('');
+
+        const topIngredients = (r.proportions || []).slice(0, 4).map(p =>
+          `<span class="px-2 py-0.5 rounded-md bg-slate-950 border border-zinc-800 text-[11px] text-zinc-300">${escapeHtml(p.ingredient)} <strong class="text-amber-300">${escapeHtml(p.amount)}${escapeHtml(p.unit)}</strong></span>`
+        ).join('');
+
+        const tags = (r.tasteProfile || []).slice(0, 3).map(t =>
+          `<span class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-500/15 text-amber-300 border border-amber-500/30">#${escapeHtml(t)}</span>`
+        ).join('');
+
+        return `
+          <article class="bg-zinc-900/90 border border-zinc-800/90 hover:border-amber-500/40 rounded-2xl p-5 flex flex-col justify-between shadow-lg transition-all group">
+            <div>
+              <!-- Header -->
+              <div class="flex items-start justify-between gap-3">
+                <div class="flex flex-wrap gap-1.5">
+                  ${tags}
+                </div>
+                <div class="flex items-center gap-0.5 shrink-0">
+                  ${stars}
+                </div>
+              </div>
+
+              <!-- Title & Tagline -->
+              <div class="mt-3">
+                <h3 onclick="openRecipeDetailModal('${escapeHtml(r.id)}')" class="font-serif text-xl font-bold text-zinc-100 group-hover:text-amber-300 cursor-pointer transition-colors">
+                  ${escapeHtml(r.title)}
+                </h3>
+                <p class="text-xs text-zinc-400 italic mt-1 line-clamp-2">
+                  «${escapeHtml(r.tagline)}»
+                </p>
+              </div>
+
+              <!-- Spec Badges -->
+              <div class="flex flex-wrap items-center gap-2 mt-3 text-[11px] text-zinc-400">
+                <span class="px-2 py-0.5 rounded bg-slate-950/80 border border-zinc-800">${escapeHtml(r.glassware)}</span>
+                <span class="px-2 py-0.5 rounded bg-slate-950/80 border border-zinc-800 text-amber-300/90">${escapeHtml(r.method)}</span>
+                ${isSmoked ? `<span class="px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/30 text-amber-300">🔥 Дым</span>` : ''}
+              </div>
+
+              <!-- Proportions Preview -->
+              <div class="mt-3.5 pt-3.5 border-t border-zinc-800/80 flex flex-wrap gap-1.5">
+                ${topIngredients}
+              </div>
+
+              ${r.userNotes ? `
+                <div class="mt-3 p-2.5 rounded-xl bg-slate-950/60 border border-zinc-800/70 text-[11px] text-zinc-400">
+                  <strong class="text-zinc-300">Заметка:</strong> ${escapeHtml(r.userNotes)}
+                </div>
+              ` : ''}
+            </div>
+
+            <!-- Card Footer Actions -->
+            <div class="mt-4 pt-3.5 border-t border-zinc-800/80 flex items-center justify-between gap-2">
+              <button
+                type="button"
+                onclick="openRecipeDetailModal('${escapeHtml(r.id)}')"
+                class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 transition-colors"
+              >
+                Открыть рецепт
+              </button>
+              <div class="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onclick="copyRecipeToClipboard('${escapeHtml(r.id)}', false)"
+                  title="Скопировать текст рецепта"
+                  class="p-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-amber-300 transition-colors"
+                >
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                </button>
+                <button
+                  type="button"
+                  onclick="printSingleRecipe('${escapeHtml(r.id)}', false)"
+                  title="Печать / Экспорт в PDF"
+                  class="p-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-emerald-300 transition-colors"
+                >
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                </button>
+                <button
+                  type="button"
+                  onclick="requestDeleteRecipe('${escapeHtml(r.id)}')"
+                  title="Удалить рецепт"
+                  class="p-1.5 rounded-lg bg-zinc-800 hover:bg-rose-500/20 text-zinc-400 hover:text-rose-400 transition-colors"
+                >
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                </button>
+              </div>
+            </div>
+          </article>
+        `;
+      }).join('');
+    }
+
+    function handleRecipeSearch(val) {
+      state.recipeSearch = val || '';
+      renderRecipesBook();
+    }
+
+    function setRecipeTagFilter(tag) {
+      state.recipeTagFilter = tag;
+      renderRecipesBook();
+    }
+
+    function handleRecipeSort(sortBy) {
+      state.recipeSort = sortBy;
+      renderRecipesBook();
+    }
+
+    function updateSavedRecipeRating(id, stars) {
+      const rec = state.recipes.find(r => r.id === id);
+      if (!rec) return;
+      rec.rating = stars;
+      safeSetStorage(STORAGE_KEYS.RECIPES, state.recipes);
+      renderRecipesBook();
+      showToast(`Рейтинг «${rec.title}» обновлен: ${stars} ★`, 'info');
+    }
+
+    // --- RECIPE DETAIL MODAL ---
+    function openRecipeDetailModal(id) {
+      const rec = state.recipes.find(r => r.id === id);
+      if (!rec) return;
+
+      const modal = document.getElementById('recipeDetailModal');
+      const content = document.getElementById('recipeDetailModalContent');
+      if (!modal || !content) return;
+
+      const propsHtml = (rec.proportions || []).map(p => `
+        <div class="flex items-center justify-between py-2 px-3 rounded-xl bg-slate-950 border border-zinc-800">
+          <span class="text-xs sm:text-sm text-zinc-200">${escapeHtml(p.ingredient)}</span>
+          <span class="text-xs sm:text-sm font-mono font-semibold text-amber-300">${escapeHtml(p.amount)} ${escapeHtml(p.unit)}</span>
+        </div>
+      `).join('');
+
+      const techHtml = (rec.technique || []).map((t, i) => `
+        <li class="flex items-start gap-2.5 text-xs sm:text-sm text-zinc-300">
+          <span class="w-5 h-5 rounded bg-amber-500/20 text-amber-300 font-mono text-xs flex items-center justify-center shrink-0 mt-0.5">${i + 1}</span>
+          <span>${escapeHtml(t.replace(/^Шаг\s*\d+\s*:\s*/i, ''))}</span>
+        </li>
+      `).join('');
+
+      const starsHtml = [1, 2, 3, 4, 5].map(s => `
+        <button
+          type="button"
+          onclick="updateDetailModalRating('${escapeHtml(rec.id)}', ${s})"
+          class="text-xl ${s <= (rec.rating || 5) ? 'text-amber-400' : 'text-zinc-600'}"
+        >★</button>
+      `).join('');
+
+      content.innerHTML = `
+        <div class="flex items-start justify-between px-6 py-5 border-b border-zinc-800 bg-slate-950/60">
+          <div>
+            <div class="flex flex-wrap gap-1.5 mb-1.5">
+              ${(rec.tasteProfile || []).map(t => `<span class="px-2 py-0.5 rounded-full text-[10px] bg-amber-500/15 text-amber-300 border border-amber-500/30">#${escapeHtml(t)}</span>`).join('')}
+            </div>
+            <h3 class="font-serif text-2xl sm:text-3xl font-bold text-zinc-100">${escapeHtml(rec.title)}</h3>
+            <p class="text-xs sm:text-sm text-zinc-400 italic mt-0.5">«${escapeHtml(rec.tagline)}»</p>
+          </div>
+          <button type="button" onclick="closeRecipeDetailModal()" class="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800">✕</button>
+        </div>
+
+        <div class="p-6 overflow-y-auto space-y-5 flex-1">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+            <div class="p-3 rounded-xl bg-slate-950 border border-zinc-800">
+              <span class="text-[10px] uppercase text-zinc-500 block">Посуда</span>
+              <span class="text-xs sm:text-sm font-semibold text-zinc-100">${escapeHtml(rec.glassware)}</span>
+            </div>
+            <div class="p-3 rounded-xl bg-slate-950 border border-zinc-800">
+              <span class="text-[10px] uppercase text-zinc-500 block">Метод</span>
+              <span class="text-xs sm:text-sm font-semibold text-amber-300">${escapeHtml(rec.method)}</span>
+            </div>
+            <div class="p-3 rounded-xl bg-slate-950 border border-zinc-800">
+              <span class="text-[10px] uppercase text-zinc-500 block">Лед</span>
+              <span class="text-xs sm:text-sm font-semibold text-zinc-100">${escapeHtml(rec.ice)}</span>
+            </div>
+          </div>
+
+          <div>
+            <h4 class="text-xs uppercase tracking-wider font-semibold text-amber-400 mb-2">Пропорции</h4>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">${propsHtml}</div>
+          </div>
+
+          <div>
+            <h4 class="text-xs uppercase tracking-wider font-semibold text-amber-400 mb-2">Техника приготовления</h4>
+            <ol class="space-y-2 bg-slate-950/60 border border-zinc-800 rounded-xl p-4">${techHtml}</ol>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div class="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-xs">
+              <strong class="text-amber-300 block mb-1">Окуривание и ароматика:</strong>
+              <span class="text-zinc-200">${escapeHtml(rec.smokeNotes)}</span>
+            </div>
+            <div class="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-xs">
+              <strong class="text-emerald-300 block mb-1">Гарнир:</strong>
+              <span class="text-zinc-200">${escapeHtml(rec.garnish)}</span>
+            </div>
+          </div>
+
+          <!-- Edit Rating & Tasting Notes -->
+          <div class="pt-4 border-t border-zinc-800 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-medium text-zinc-300">Личный рейтинг дегустации:</span>
+              <div class="flex items-center gap-1">${starsHtml}</div>
+            </div>
+            <div>
+              <label for="detailModalNotesInput" class="block text-xs font-medium text-zinc-300 mb-1">Личные заметки о дегустации:</label>
+              <textarea
+                id="detailModalNotesInput"
+                rows="2"
+                placeholder="Добавьте заметки о вкусе или вариациях..."
+                class="w-full py-2 px-3 bg-slate-950 border border-zinc-800 focus:border-amber-500 rounded-xl text-xs sm:text-sm text-zinc-100 focus:outline-none"
+              >${escapeHtml(rec.userNotes || '')}</textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="px-6 py-4 border-t border-zinc-800 bg-slate-950/60 flex flex-wrap items-center justify-between gap-2">
+          <div class="flex items-center gap-2">
+            <button type="button" onclick="copyRecipeToClipboard('${escapeHtml(rec.id)}', false)" class="px-3 py-2 rounded-xl text-xs font-medium bg-zinc-800 hover:bg-zinc-700 text-zinc-200">
+              Копировать текст
+            </button>
+            <button type="button" onclick="printSingleRecipe('${escapeHtml(rec.id)}', false)" class="px-3 py-2 rounded-xl text-xs font-medium bg-zinc-800 hover:bg-zinc-700 text-zinc-200">
+              Печать / PDF
+            </button>
+          </div>
+          <div class="flex items-center gap-2">
+            <button type="button" onclick="saveDetailModalChanges('${escapeHtml(rec.id)}')" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-amber-500 hover:bg-amber-400 text-slate-950">
+              Сохранить заметки
+            </button>
+          </div>
+        </div>
+      `;
+
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeRecipeDetailModal() {
+      const modal = document.getElementById('recipeDetailModal');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
+
+    function updateDetailModalRating(id, stars) {
+      const rec = state.recipes.find(r => r.id === id);
+      if (!rec) return;
+      rec.rating = stars;
+      safeSetStorage(STORAGE_KEYS.RECIPES, state.recipes);
+      openRecipeDetailModal(id);
+      renderRecipesBook();
+    }
+
+    async function saveDetailModalChanges(id) {
+      const rec = state.recipes.find(r => r.id === id);
+      if (!rec) return;
+      const notesEl = document.getElementById('detailModalNotesInput');
+      if (notesEl) {
+        rec.userNotes = notesEl.value.trim();
+      }
+      safeSetStorage(STORAGE_KEYS.RECIPES, state.recipes);
+      renderRecipesBook();
+      closeRecipeDetailModal();
+
+      if (isGitHubConnected()) {
+        await commitRecipeToGitHub(rec, `Update notes for ${rec.title}`);
+      } else {
+        showToast(`Заметки к «${rec.title}» сохранены`, 'success');
+      }
+    }
+
+    // --- MANUAL RECIPE CREATION MODAL ---
+    function openManualRecipeModal() {
+      const m = document.getElementById('manualRecipeModal');
+      if (m) {
+        m.classList.remove('hidden');
+        m.classList.add('flex');
+      }
+    }
+
+    function closeManualRecipeModal() {
+      const m = document.getElementById('manualRecipeModal');
+      if (m) {
+        m.classList.add('hidden');
+        m.classList.remove('flex');
+      }
+    }
+
+    async function handleSaveManualRecipe(event) {
+      event.preventDefault();
+      const title = document.getElementById('manualTitle')?.value.trim();
+      if (!title) return;
+
+      const tagline = document.getElementById('manualTagline')?.value.trim() || 'Авторский микс из домашней коллекции';
+      const glassware = document.getElementById('manualGlassware')?.value || 'Рокс / Олд фэшн';
+      const method = document.getElementById('manualMethod')?.value || 'Стир (Stir)';
+      const ice = document.getElementById('manualIce')?.value || 'Крупный прозрачный куб';
+      const rawTags = document.getElementById('manualTasteProfile')?.value || 'авторский, сбалансированный';
+      const garnish = document.getElementById('manualGarnish')?.value.trim() || 'Цедра апельсина';
+      const smokeNotes = document.getElementById('manualSmokeNotes')?.value.trim() || 'Без окуривания';
+      const rawProps = document.getElementById('manualProportions')?.value.trim() || 'Джин | 50 | мл';
+      const rawTech = document.getElementById('manualTechnique')?.value.trim() || 'Шаг 1: Смешать все ингредиенты со льдом.';
+
+      const proportions = rawProps.split('\n').map(line => {
+        const parts = line.split('|').map(s => s.trim());
+        return {
+          ingredient: parts[0] || 'Ингредиент',
+          amount: parts[1] || '30',
+          unit: parts[2] || 'мл'
+        };
+      }).filter(p => p.ingredient);
+
+      const technique = rawTech.split('\n').map(s => s.trim()).filter(Boolean);
+      const tasteProfile = rawTags.split(',').map(s => s.trim()).filter(Boolean);
+
+      const newRec = {
+        id: 'rec_' + Date.now(),
+        title,
+        tagline,
+        tasteProfile: tasteProfile.length ? tasteProfile : ['авторский'],
+        glassware,
+        method,
+        ice,
+        proportions,
+        technique,
+        garnish,
+        smokeNotes,
+        rating: 5,
+        userNotes: '',
+        createdAt: new Date().toISOString()
+      };
+
+      state.recipes.unshift(newRec);
+      safeSetStorage(STORAGE_KEYS.RECIPES, state.recipes);
+      closeManualRecipeModal();
+      renderRecipesBook();
+      updateStatusBadges();
+
+      if (isGitHubConnected()) {
+        await commitRecipeToGitHub(newRec, `Add recipe: ${newRec.title}`);
+      } else {
+        showToast(`Рецепт «${newRec.title}» добавлен в книгу`, 'success');
+      }
+    }
+
+    // --- DELETE RECIPE WITH CONFIRMATION MODAL ---
+    function requestDeleteRecipe(id) {
+      const rec = state.recipes.find(r => r.id === id);
+      if (!rec) return;
+      state.pendingDeleteId = id;
+      const titleEl = document.getElementById('deleteConfirmRecipeTitle');
+      if (titleEl) titleEl.textContent = `«${rec.title}»`;
+      const modal = document.getElementById('deleteConfirmModal');
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      }
+    }
+
+    function closeDeleteConfirmModal() {
+      state.pendingDeleteId = null;
+      const modal = document.getElementById('deleteConfirmModal');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
+
+    async function confirmDeleteRecipe() {
+      const id = state.pendingDeleteId;
+      if (!id) return;
+      const rec = state.recipes.find(r => r.id === id);
+      state.recipes = state.recipes.filter(r => r.id !== id);
+      safeSetStorage(STORAGE_KEYS.RECIPES, state.recipes);
+      closeDeleteConfirmModal();
+      renderRecipesBook();
+      renderGeneratedRecipe();
+      updateStatusBadges();
+
+      if (isGitHubConnected()) {
+        await commitRecipeToGitHub(null, `Remove recipe: ${rec ? rec.title : id}`);
+      } else {
+        showToast(`Рецепт «${rec ? rec.title : ''}» удален`, 'info');
+      }
+    }
+
+    // --- COPY TO CLIPBOARD & PRINT/PDF ---
+    function formatRecipePlainText(rec) {
+      const props = (rec.proportions || []).map(p => `• ${p.ingredient}: ${p.amount} ${p.unit}`).join('\n');
+      const steps = (rec.technique || []).map((s, i) => `${i + 1}. ${s.replace(/^Шаг\s*\d+\s*:\s*/i, '')}`).join('\n');
+      return [
+        `🍸 ${rec.title} — Atelier Bar`,
+        `«${rec.tagline}»`,
+        `Профиль: ${(rec.tasteProfile || []).join(', ')}`,
+        `Посуда: ${rec.glassware} | Метод: ${rec.method} | Лед: ${rec.ice}`,
+        ``,
+        `ИНГРЕДИЕНТЫ:`,
+        props,
+        ``,
+        `ТЕХНИКА ПРИГОТОВЛЕНИЯ:`,
+        steps,
+        ``,
+        `Гарнир: ${rec.garnish}`,
+        `Окуривание/Дым: ${rec.smokeNotes}`,
+        rec.userNotes ? `Заметки: ${rec.userNotes}` : ''
+      ].filter(Boolean).join('\n');
+    }
+
+    function copyRecipeToClipboard(id, fromGenerator) {
+      const rec = fromGenerator ? state.generatedRecipe : state.recipes.find(r => r.id === id);
+      if (!rec) return;
+      const text = formatRecipePlainText(rec);
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+          showToast(`Рецепт «${rec.title}» скопирован в буфер обмена`, 'success');
+        }).catch(() => fallbackCopyText(text, rec.title));
+      } else {
+        fallbackCopyText(text, rec.title);
+      }
+    }
+
+    function fallbackCopyText(text, title) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand('copy');
+        showToast(`Рецепт «${title}» скопирован в буфер обмена`, 'success');
+      } catch (e) {
+        showToast('Не удалось скопировать текст', 'error');
+      }
+      document.body.removeChild(ta);
+    }
+
+    function printSingleRecipe(id, fromGenerator) {
+      const rec = fromGenerator ? state.generatedRecipe : state.recipes.find(r => r.id === id);
+      if (!rec) return;
+      const printArea = document.getElementById('printArea');
+      if (!printArea) return;
+
+      printArea.innerHTML = `
+        <div style="font-family: Georgia, serif; max-width: 680px; margin: 0 auto; padding: 24px; border: 1px solid #d4d4d8; border-radius: 12px;">
+          <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: #b45309;">Atelier Bar • Карточка рецепта</div>
+          <h1 style="font-size: 28px; margin: 6px 0 4px 0; color: #111827;">${escapeHtml(rec.title)}</h1>
+          <p style="font-style: italic; color: #4b5563; margin: 0 0 16px 0;">«${escapeHtml(rec.tagline)}»</p>
+          <div style="display: flex; gap: 16px; padding: 10px 0; border-top: 1px solid #e5e7eb; border-bottom: 1px solid #e5e7eb; font-family: sans-serif; font-size: 12px;">
+            <div><strong>Посуда:</strong> ${escapeHtml(rec.glassware)}</div>
+            <div><strong>Метод:</strong> ${escapeHtml(rec.method)}</div>
+            <div><strong>Лед:</strong> ${escapeHtml(rec.ice)}</div>
+          </div>
+          <h3 style="font-size: 14px; text-transform: uppercase; margin-top: 18px; color: #92400e;">Пропорции</h3>
+          <ul style="font-family: sans-serif; font-size: 13px; line-height: 1.7;">
+            ${(rec.proportions || []).map(p => `<li><strong>${escapeHtml(p.ingredient)}</strong> — ${escapeHtml(p.amount)} ${escapeHtml(p.unit)}</li>`).join('')}
+          </ul>
+          <h3 style="font-size: 14px; text-transform: uppercase; margin-top: 18px; color: #92400e;">Технология приготовления</h3>
+          <ol style="font-family: sans-serif; font-size: 13px; line-height: 1.7;">
+            ${(rec.technique || []).map(s => `<li>${escapeHtml(s.replace(/^Шаг\s*\d+\s*:\s*/i, ''))}</li>`).join('')}
+          </ol>
+          <div style="margin-top: 16px; padding: 12px; background: #fef3c7; border-radius: 8px; font-family: sans-serif; font-size: 12px;">
+            <div><strong>Гарнир:</strong> ${escapeHtml(rec.garnish)}</div>
+            <div style="margin-top: 4px;"><strong>Окуривание / Дым:</strong> ${escapeHtml(rec.smokeNotes)}</div>
+            ${rec.userNotes ? `<div style="margin-top: 4px;"><strong>Заметки:</strong> ${escapeHtml(rec.userNotes)}</div>` : ''}
+          </div>
+        </div>
+      `;
+      window.print();
+    }
+
+    // ==========================================
+    // SETTINGS MODAL (AI API & GITHUB SYNC)
+    // ==========================================
+    function openSettingsModal(tab = 'ai') {
+      const modal = document.getElementById('settingsModal');
+      if (!modal) return;
+
+      // Populate AI inputs
+      const pSel = document.getElementById('aiProviderSelect');
+      const mInp = document.getElementById('aiModelInput');
+      const eInp = document.getElementById('aiEndpointInput');
+      const kInp = document.getElementById('aiApiKeyInput');
+      if (pSel) pSel.value = state.aiSettings.provider || 'deepseek';
+      if (mInp) mInp.value = state.aiSettings.model || 'deepseek-chat';
+      if (eInp) eInp.value = state.aiSettings.endpoint || 'https://api.deepseek.com/chat/completions';
+      if (kInp) kInp.value = state.aiSettings.apiKey || '';
+
+      // Populate GitHub inputs
+      const oInp = document.getElementById('ghOwnerInput');
+      const rInp = document.getElementById('ghRepoInput');
+      const bInp = document.getElementById('ghBranchInput');
+      const pathInp = document.getElementById('ghPathInput');
+      const tInp = document.getElementById('ghTokenInput');
+      if (oInp) oInp.value = state.ghSettings.owner || '';
+      if (rInp) rInp.value = state.ghSettings.repo || '';
+      if (bInp) bInp.value = state.ghSettings.branch || 'main';
+      if (pathInp) pathInp.value = state.ghSettings.path || 'recipes.json';
+      if (tInp) tInp.value = state.ghSettings.token || '';
+
+      switchSettingsTab(tab);
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeSettingsModal() {
+      const modal = document.getElementById('settingsModal');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
+
+    function switchSettingsTab(tab) {
+      const aiPanel = document.getElementById('settingsPanel-ai');
+      const ghPanel = document.getElementById('settingsPanel-github');
+      const aiBtn = document.getElementById('settingsTabBtn-ai');
+      const ghBtn = document.getElementById('settingsTabBtn-github');
+
+      if (tab === 'github') {
+        if (aiPanel) aiPanel.classList.add('hidden');
+        if (ghPanel) ghPanel.classList.remove('hidden');
+        if (ghBtn) ghBtn.className = 'px-4 py-2 text-xs sm:text-sm font-medium border-b-2 border-amber-500 text-amber-400 transition-colors';
+        if (aiBtn) aiBtn.className = 'px-4 py-2 text-xs sm:text-sm font-medium border-b-2 border-transparent text-zinc-400 hover:text-zinc-200 transition-colors';
+      } else {
+        if (ghPanel) ghPanel.classList.add('hidden');
+        if (aiPanel) aiPanel.classList.remove('hidden');
+        if (aiBtn) aiBtn.className = 'px-4 py-2 text-xs sm:text-sm font-medium border-b-2 border-amber-500 text-amber-400 transition-colors';
+        if (ghBtn) ghBtn.className = 'px-4 py-2 text-xs sm:text-sm font-medium border-b-2 border-transparent text-zinc-400 hover:text-zinc-200 transition-colors';
+      }
+    }
+
+    function handleAiProviderPreset(provider) {
+      const mInp = document.getElementById('aiModelInput');
+      const eInp = document.getElementById('aiEndpointInput');
+      if (!mInp || !eInp) return;
+
+      if (provider === 'deepseek') {
+        eInp.value = 'https://api.deepseek.com/chat/completions';
+        mInp.value = 'deepseek-chat';
+      } else if (provider === 'openai') {
+        eInp.value = 'https://api.openai.com/v1/chat/completions';
+        mInp.value = 'gpt-4o-mini';
+      } else if (provider === 'gemini') {
+        eInp.value = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
+        mInp.value = 'gemini-2.5-flash';
+      }
+    }
+
+    function toggleSecretInput(inputId, btnEl) {
+      const inp = document.getElementById(inputId);
+      if (!inp) return;
+      if (inp.type === 'password') {
+        inp.type = 'text';
+        if (btnEl) btnEl.textContent = 'Скрыть';
+      } else {
+        inp.type = 'password';
+        if (btnEl) btnEl.textContent = 'Показать';
+      }
+    }
+
+    function saveAiSettings() {
+      const provider = document.getElementById('aiProviderSelect')?.value || 'deepseek';
+      const model = document.getElementById('aiModelInput')?.value.trim() || 'deepseek-chat';
+      const endpoint = document.getElementById('aiEndpointInput')?.value.trim() || 'https://api.deepseek.com/chat/completions';
+      const apiKey = document.getElementById('aiApiKeyInput')?.value.trim() || '';
+
+      state.aiSettings = { provider, model, endpoint, apiKey };
+      safeSetStorage(STORAGE_KEYS.AI_SETTINGS, state.aiSettings);
+      updateStatusBadges();
+      closeSettingsModal();
+      showToast(
+        apiKey ? `AI провайдер (${model}) сохранен в localStorage` : 'Настройки сохранены (активен оффлайн-генератор)',
+        'success'
+      );
+    }
+
+    function clearAiSettings() {
+      state.aiSettings.apiKey = '';
+      safeSetStorage(STORAGE_KEYS.AI_SETTINGS, state.aiSettings);
+      const kInp = document.getElementById('aiApiKeyInput');
+      if (kInp) kInp.value = '';
+      updateStatusBadges();
+      showToast('API-ключ очищен. Включен алгоритмический оффлайн-генератор.', 'info');
+    }
+
+    function saveGitHubSettings() {
+      const owner = document.getElementById('ghOwnerInput')?.value.trim() || '';
+      const repo = document.getElementById('ghRepoInput')?.value.trim() || '';
+      const branch = document.getElementById('ghBranchInput')?.value.trim() || 'main';
+      const path = document.getElementById('ghPathInput')?.value.trim() || 'recipes.json';
+      const token = document.getElementById('ghTokenInput')?.value.trim() || '';
+
+      state.ghSettings = { owner, repo, branch, path, token };
+      safeSetStorage(STORAGE_KEYS.GH_SETTINGS, state.ghSettings);
+      updateStatusBadges();
+      closeSettingsModal();
+      showToast(
+        isGitHubConnected() ? `GitHub синхронизация настроена (${owner}/${repo})` : 'Настройки GitHub обновлены (Local Only)',
+        'success'
+      );
+    }
+
+    function clearGitHubSettings() {
+      state.ghSettings = { owner: '', repo: '', branch: 'main', path: 'recipes.json', token: '' };
+      safeSetStorage(STORAGE_KEYS.GH_SETTINGS, state.ghSettings);
+      openSettingsModal('github');
+      updateStatusBadges();
+      showToast('GitHub токен отключен. Приложение работает в режиме Local Only.', 'info');
+    }
+
+    async function testGitHubConnection() {
+      const owner = document.getElementById('ghOwnerInput')?.value.trim() || '';
+      const repo = document.getElementById('ghRepoInput')?.value.trim() || '';
+      const token = document.getElementById('ghTokenInput')?.value.trim() || '';
+
+      if (!owner || !repo || !token) {
+        showToast('Заполните Owner, Repository Name и Personal Access Token', 'warning');
+        return;
+      }
+
+      const btn = document.getElementById('testGhConnectionBtn');
+      if (btn) btn.textContent = 'Проверка...';
+
+      try {
+        const resp = await fetch(`https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/vnd.github+json'
+          }
+        });
+
+        if (resp.ok) {
+          const data = await resp.json();
+          const canPush = data.permissions && data.permissions.push;
+          showToast(
+            `Репозиторий ${data.full_name} доступен!`,
+            'success',
+            canPush ? 'Права на запись подтверждены.' : 'Подключение установлено.'
+          );
+        } else if (resp.status === 401) {
+          showToast('Ошибка 401: Недействительный токен (Bad Credentials)', 'error');
+        } else if (resp.status === 404) {
+          showToast('Ошибка 404: Репозиторий не найден или у токена нет к нему доступа', 'error');
+        } else {
+          showToast(`Ответ GitHub API: HTTP ${resp.status}`, 'warning');
+        }
+      } catch (e) {
+        showToast('Ошибка сети при подключении к api.github.com', 'error');
+      } finally {
+        if (btn) btn.textContent = 'Проверить подключение';
+      }
+    }
+
+    // Boot application on DOM ready
+    window.addEventListener('DOMContentLoaded', initApp);
+  </script>
+</body>
+</html>
