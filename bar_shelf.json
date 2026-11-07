@@ -269,7 +269,7 @@
     "id": "lq_sweet_vermouth",
     "name": "Сладкий вермут",
     "category": "liqueurs",
-    "inStock": false,
+    "inStock": true,
     "isCustom": false
   },
   {
@@ -290,7 +290,7 @@
     "id": "sy_simple",
     "name": "Простой сахарный сироп",
     "category": "syrups",
-    "inStock": false,
+    "inStock": true,
     "isCustom": false
   },
   {
@@ -779,6 +779,20 @@
   {
     "id": "cust_1792848588073_15fo",
     "name": "Ликёр белый шоколад эмульсионный",
+    "category": "liqueurs",
+    "inStock": true,
+    "isCustom": true
+  },
+  {
+    "id": "cust_1794074857022_296g",
+    "name": "Егермейстер",
+    "category": "liqueurs",
+    "inStock": true,
+    "isCustom": true
+  },
+  {
+    "id": "cust_1794074865448_r9mg",
+    "name": "Егермейстер апельсиновый",
     "category": "liqueurs",
     "inStock": true,
     "isCustom": true
