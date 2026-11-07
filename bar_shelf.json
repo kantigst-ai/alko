@@ -796,5 +796,12 @@
     "category": "liqueurs",
     "inStock": true,
     "isCustom": true
+  },
+  {
+    "id": "cust_1794074977519_u9l9",
+    "name": "Сироп ананасовый",
+    "category": "syrups",
+    "inStock": true,
+    "isCustom": true
   }
 ]
