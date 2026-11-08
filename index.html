@@ -1087,6 +1087,14 @@
         return false;
       }
     }
+	
+function rerollCocktail() {
+      const icons = document.querySelectorAll('.reroll-spin-icon');
+      icons.forEach(el => el.classList.add('animate-spin'));
+      generateCocktail().finally(() => {
+        icons.forEach(el => el.classList.remove('animate-spin'));
+      });
+    }
 
     // --- CATEGORY DEFINITIONS ---
     const CATEGORIES = [
@@ -1273,7 +1281,9 @@
     ];
 
     // --- MOOD & SMOKE OPTIONS ---
-    const MOOD_OPTIONS = [
+const MOOD_OPTIONS = [
+      { id: 'chef_choice', label: '🎲 На усмотрение шефа', desc: 'Свободный авторский стиль по вашему пожеланию', icon: '✨' },
+      { id: 'highball_long', label: 'Лонг / Хайбол', desc: 'Питкий, легкий, содовая или тоник', icon: '🥤' },
       { id: 'spirit_forward', label: 'Крепкий и строгий', desc: 'Old Fashioned / Negroni баланс', icon: '🥃' },
       { id: 'refreshing_sour', label: 'Освежающий сауэр', desc: 'Яркий цитрус и шелковый шейк', icon: '🍋' },
       { id: 'smoky_complex', label: 'Дымный и сложный', desc: 'Глубокая ароматика и окуривание', icon: '🔥' },
@@ -1296,7 +1306,7 @@
       inventory: [],
       inventoryFilter: 'all', // 'all' | 'inStock'
       inventorySearch: '',
-      selectedMood: 'smoky_complex',
+      selectedMood: 'chef_choice',
       selectedSmoke: 'auto',
       preferredSpirit: 'auto',
       generatorEngine: 'auto',
@@ -2118,39 +2128,44 @@
     }
 
     // --- AI API CALL (DEEPSEEK / OPENAI / GEMINI) ---
+// --- AI API CALL (DEEPSEEK / OPENAI / GEMINI) ---
     async function generateAiCocktail(inStockItems, customWish) {
+      const isChefChoice = state.selectedMood === 'chef_choice';
       const moodObj = MOOD_OPTIONS.find(m => m.id === state.selectedMood) || MOOD_OPTIONS[0];
+      
+      // Сборка ингредиентов по категориям (была случайно удалена)
       const grouped = {};
       CATEGORIES.forEach(c => {
         grouped[c.title] = inStockItems.filter(i => i.category === c.id).map(i => i.name);
       });
 
-      const systemPrompt = `Ты — шеф-миксолог мирового уровня в премиальном баре "Atelier Bar".
-Твоя задача: разработать сбалансированный авторский коктейль СТРОГО из ингредиентов в наличии у пользователя.
-Правила миксологии:
-1. Используй ТОЛЬКО ингредиенты из переданного списка "В наличии" (разрешается добавлять только лед и воду).
-2. Соблюдай золотое сечение баланса коктейля (крепкая часть 45-60 мл : кислая часть 20-30 мл : сладкая часть/ликеры 15-25 мл : биттеры/миксеры).
-3. Подбери правильный бокал (Рокс / Олд фэшн / Купе / Хайбол), метод приготовления (Шейк / Стир / Билд) и лед.
-4. Детально опиши подачу и работу со смокером/щепой/пламенем, если они выбраны или есть в наличии.
-5. Ответь СТРОГО валидным JSON-объектом по следующей схеме без какого-либо текста вокруг:
+      const systemPrompt = `Ты — шеф-миксолог мирового уровня в баре "Atelier Bar".
+Твоя задача: разработать гармоничный авторский коктейль СТРОГО из ингредиентов в наличии у пользователя.
+
+ПРАВИЛА БАЛАНСА:
+1. ЛИМИТ САХАРА: суммарный объем сладких компонентов (сиропы/ликеры) — до 20–25 мл (для Тики/десертных допустимо до 30 мл при наличии яркой кислоты). Не превращай коктейль в приторную патоку.
+2. ПРАВИЛО ГЛАВНОГО ГЕРОЯ: если гость назвал компонент или стиль (например, "ананасовый сироп", "бурбон", "тики") — строй концепт вокруг него, не перебивая несочетаемыми сиропами.
+3. СВОБОДА АРХИТЕКТУРЫ:
+- Если режим "На усмотрение шефа": полная свобода формы! Сам определяй архитектуру напитка под запрос гостя: Тики, Спритц, Свизл, Коллинз, Сауэр, Стир, Панч или шот-сет.
+- Синхронизируй метод и подачу: Билд — всё в бокал на лед; Шейк — взбивание и фильтрация; Стир — смесительный стакан. Газированные напитки НИКОГДА не шейкуются.
+4. Ответь СТРОГО валидным JSON-объектом:
 {
   "id": "rec_${Date.now()}",
-  "title": "Поэтичное название коктейля",
-  "tagline": "Короткое описание вкусового профиля (1 предложение)",
-  "tasteProfile": ["тег1", "тег2", "тег3"],
-  "glassware": "Рокс / Олд фэшн / Купе / Хайбол",
-  "method": "Шейк / Стир / Билд",
-  "ice": "Крупный куб / Дробленый / Без льда",
+  "title": "Название коктейля",
+  "tagline": "Описание вкусового профиля (1 предложение)",
+  "tasteProfile": ["тег1", "тег2"],
+  "glassware": "Рокс / Хайбол / Купе / Тики-бокал / Слинг",
+  "method": "Шейк / Стир / Билд / Свизл",
+  "ice": "Крупный куб / Дробленый (Краш) / Кубиковый / Без льда",
   "proportions": [
     { "ingredient": "Название", "amount": "50", "unit": "мл" }
   ],
   "technique": [
     "Шаг 1: ...",
-    "Шаг 2: ...",
-    "Шаг 3: ..."
+    "Шаг 2: ..."
   ],
-  "garnish": "Описание гарнира",
-  "smokeNotes": "Детали окуривания щепой под клошем или работы с цедрой",
+  "garnish": "Гарнир",
+  "smokeNotes": "Окуривание или Без окуривания",
   "rating": 5,
   "userNotes": "",
   "createdAt": "${new Date().toISOString()}"
@@ -2159,10 +2174,13 @@
       const userPrompt = `Ингредиенты в наличии:
 ${JSON.stringify(grouped, null, 2)}
 
-Желаемое настроение коктейля: ${moodObj.label} (${moodObj.desc}).
-Предпочитаемая база: ${state.preferredSpirit === 'auto' ? 'Любая подходящая из наличия' : state.preferredSpirit}.
-Режим окуривания/дыма: ${state.selectedSmoke === 'auto' ? 'По наличию щепы/смокера' : (state.selectedSmoke === 'none' ? 'Без окуривания' : state.selectedSmoke)}.
-${customWish ? `Дополнительное пожелание гостя: ${customWish}` : ''}
+${isChefChoice 
+  ? 'РЕЖИМ: НА УСМОТРЕНИЕ ШЕФА. Выбери идеальный стиль, бокал и баланс самостоятельно.' 
+  : `Желаемый профиль: ${moodObj.label} (${moodObj.desc}).`}
+Предпочитаемая база: ${state.preferredSpirit === 'auto' ? 'На твой выбор' : state.preferredSpirit}.
+Окуривание: ${state.selectedSmoke === 'auto' ? 'По ситуации' : (state.selectedSmoke === 'none' ? 'Без окуривания' : state.selectedSmoke)}.
+
+${customWish ? `ГЛАВНЫЙ ОРИЕНТИР (ПОЖЕЛАНИЕ ГОСТЯ): "${customWish}". Подчини весь рецепт этому запросу!` : 'Придумай интересный, небанальный твист из того, что есть.'}
 
 Верни только чистый JSON объект рецепта.`;
 
@@ -2288,8 +2306,21 @@ ${customWish ? `Дополнительное пожелание гостя: ${cu
       const herbs = bittersAndHerbs.filter(n => ['розмарин', 'мята', 'тимьян'].some(h => n.toLowerCase().includes(h)));
       const bitters = bittersAndHerbs.filter(n => !herbs.includes(n));
 
-      const mood = state.selectedMood;
-
+      let mood = state.selectedMood;
+      if (mood === 'chef_choice') {
+        const w = (customWish || '').toLowerCase();
+        if (w.includes('тики') || w.includes('тропик') || w.includes('лонг') || w.includes('легк')) {
+          mood = 'highball_long';
+        } else if (w.includes('крепк') || w.includes('строг') || w.includes('негрони') || w.includes('дижестив')) {
+          mood = 'spirit_forward';
+        } else if (w.includes('ягод') || w.includes('сладк') || w.includes('десерт')) {
+          mood = 'berry_dessert';
+        } else {
+          mood = pickRandom(['highball_long', 'refreshing_sour', 'smoky_complex', 'spirit_forward'], 'highball_long');
+        }
+      }
+	  
+	  
       // Determine Base Spirit
       let baseSpirit = 'Джин';
       if (mood === 'mocktail') {
@@ -2342,7 +2373,28 @@ ${customWish ? `Дополнительное пожелание гостя: ${cu
       let tagline = '';
       let technique = [];
 
-      if (mood === 'spirit_forward') {
+if (mood === 'highball_long') {
+        glassware = 'Хайбол';
+        method = 'Билд / Долив содовой';
+        ice = 'Кубиковый лед';
+        tasteProfile = ['лонг', 'освежающий', 'питкий', isSmoked ? 'дымный' : 'цитрусовый'];
+
+        proportions.push({ ingredient: baseSpirit, amount: '50', unit: 'мл' });
+        proportions.push({ ingredient: chosenAcid, amount: '15', unit: 'мл' });
+        proportions.push({ ingredient: chosenSyrup, amount: '15', unit: 'мл' });
+        const bubble = chosenBubble || 'Содовая';
+        proportions.push({ ingredient: bubble, amount: '100', unit: 'мл' });
+        if (chosenBitter) proportions.push({ ingredient: chosenBitter, amount: '2', unit: 'дэш' });
+
+        title = `Atelier Highball (${baseSpirit} & ${chosenSyrup.split(' ')[0]})`;
+        tagline = `Освежающий высокий лонг на базе «${baseSpirit}» с балансом содовой и цитруса.`;
+        technique = [
+          `Шаг 1: Наполнить бокал Хайбол кубиковым льдом доверху.`,
+          `Шаг 2: Влить ${baseSpirit}, ${chosenAcid.toLowerCase()} и ${chosenSyrup.toLowerCase()}. Перемешать барной ложкой.`,
+          `Шаг 3: Долить ледяной ${bubble.toLowerCase()} доверху и аккуратно поднять лед снизу вверх ложкой.`,
+          `Шаг 4: ${smokeNotes}.`
+        ];
+      } else if (mood === 'spirit_forward') {
         glassware = 'Рокс / Олд фэшн';
         method = 'Стир (Stir)';
         ice = 'Крупный прозрачный куб';
@@ -2611,8 +2663,20 @@ ${customWish ? `Дополнительное пожелание гостя: ${cu
                 </div>
               </div>
 
-              <!-- Save Button Top -->
+              
+			  <!-- Save Button Top -->
               <div class="flex sm:flex-col items-end gap-2 shrink-0">
+			  <button
+                  type="button"
+                  onclick="rerollCocktail()"
+                  class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-zinc-800 hover:bg-zinc-700 text-amber-300 border border-zinc-700 hover:border-amber-500/40 transition-all shadow-sm"
+                  title="Сгенерировать другой вариант с теми же параметрами"
+                >
+                  <svg class="w-4 h-4 text-amber-400 reroll-spin-icon transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+                  </svg>
+                  <span>Реролл</span>
+                </button>
                 <button
                   type="button"
                   onclick="saveCurrentRecipeToCollection()"
@@ -2720,6 +2784,16 @@ ${customWish ? `Дополнительное пожелание гостя: ${cu
             <!-- Bottom Actions Bar -->
             <div class="pt-4 border-t border-zinc-800/80 flex flex-wrap items-center justify-between gap-3">
               <div class="flex flex-wrap items-center gap-2">
+			  <button
+                  type="button"
+                  onclick="rerollCocktail()"
+                  class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 transition-colors"
+                >
+                  <svg class="w-4 h-4 text-amber-400 reroll-spin-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+                  </svg>
+                  <span>Реролл</span>
+                </button>
                 <button
                   type="button"
                   onclick="copyRecipeToClipboard('${escapeHtml(rec.id)}', true)"
